@@ -8,7 +8,23 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  /* No --font-mono override on purpose.
+   *
+   * This slot used to read `var(--font-geist-mono)` — a leftover from
+   * the Next.js Geist starter this project was scaffolded from. Nothing
+   * ever defined that variable (layout.tsx loads Inter and defines
+   * `--font-sans` only), so the override resolved to nothing and every
+   * `font-mono` element — API keys, webhook URLs, invite links, flow
+   * node keys, user IDs — quietly rendered in the sans face. It fails
+   * silently: an unresolvable var() in a font-family just drops to the
+   * inherited font, so nothing errors and it looks merely "a bit off".
+   *
+   * Omitting the key lets Tailwind's own default stack through
+   * (ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, …), which is
+   * what we want: those spots need monospace for character alignment,
+   * not a specific typeface, and a system stack costs no extra webfont
+   * download. If a branded mono is ever wanted, load it in layout.tsx
+   * with next/font and point this key at the variable it generates. */
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -147,7 +163,84 @@ html[data-mode="light"] {
 
 /* ---- ACCENT: primary color ---- */
 
+/* Tazeyo — the house brand theme, and the app default.
+ *
+ * Palette (Tazeyo design system, mirrored in
+ * tazeyo-hrm/src/theme/LightTheme.ts):
+ *   Kiwi Green  #A2E96C  oklch(0.861 0.173 133.4)
+ *   Warm Black  #063639  oklch(0.304 0.048 201.4)
+ *   Alabaster   #F7F4E9  oklch(0.966 0.015 94.2)
+ *   ink-600 #2C7376 · ink-500 #4E8F91 · ink-100 #E9F1F0 · kiwi-600 #569A26
+ *
+ * Why this theme breaks the accent/mode split documented above:
+ * Tazeyo's brand primary is Warm Black — great as a button fill and as
+ * link text on a light canvas, invisible on a dark one. Kiwi Green is
+ * the inverse: it sings on dark and fails contrast as text on white.
+ * So `tazeyo` ships a mode-aware primary. The base block below is the
+ * dark pairing (kiwi on warm black); the compound
+ * `[data-mode="light"]` block after it swaps to warm-black-on-Alabaster
+ * and also retunes the neutrals, so the light UI sits on the brand's
+ * Alabaster canvas rather than the generic cool grey. That compound
+ * selector outranks both the plain accent block and the
+ * `html[data-mode="light"]` neutral block, so cascade order still
+ * doesn't matter — this is simply the one theme where the two
+ * dimensions are deliberately coupled. Other accents are untouched. */
 :root,
+html[data-theme="tazeyo"] {
+  --primary: oklch(0.861 0.173 133.4); /* Kiwi Green */
+  --primary-foreground: oklch(0.304 0.048 201.4); /* Warm Black */
+  --primary-hover: oklch(0.9 0.16 133.4);
+  --primary-soft: oklch(0.861 0.173 133.4 / 0.14);
+  --primary-soft-2: oklch(0.861 0.173 133.4 / 0.24);
+  --ring: oklch(0.861 0.173 133.4);
+  --chart-1: oklch(0.861 0.173 133.4);
+  --chart-2: oklch(0.608 0.067 198.1); /* ink-500 */
+  --sidebar-primary: oklch(0.861 0.173 133.4);
+  --sidebar-primary-foreground: oklch(0.304 0.048 201.4);
+  --sidebar-ring: oklch(0.861 0.173 133.4);
+}
+
+html[data-theme="tazeyo"][data-mode="light"] {
+  /* accent — Warm Black leads, kiwi becomes the tint */
+  --primary: oklch(0.304 0.048 201.4); /* Warm Black */
+  --primary-foreground: oklch(0.966 0.015 94.2); /* Alabaster */
+  --primary-hover: oklch(0.374 0.059 201.6); /* ink-800 */
+  --primary-soft: oklch(0.861 0.173 133.4 / 0.3); /* kiwi wash */
+  --primary-soft-2: oklch(0.861 0.173 133.4 / 0.5);
+  --ring: oklch(0.513 0.07 199.1); /* ink-600 */
+  --chart-1: oklch(0.618 0.162 135.4); /* kiwi-600 — readable on white */
+  --chart-2: oklch(0.513 0.07 199.1); /* ink-600 */
+  --chart-3: oklch(0.608 0.067 198.1); /* ink-500 */
+  --chart-4: oklch(0.722 0.15 70.1); /* warning amber */
+  --chart-5: oklch(0.861 0.173 133.4); /* kiwi */
+  --sidebar-primary: oklch(0.304 0.048 201.4);
+  --sidebar-primary-foreground: oklch(0.966 0.015 94.2);
+  --sidebar-ring: oklch(0.513 0.07 199.1);
+
+  /* neutrals — Alabaster canvas, warm-tinted ink borders */
+  --background: oklch(0.966 0.015 94.2); /* Alabaster */
+  --foreground: oklch(0.304 0.048 201.4); /* Warm Black */
+  --card: oklch(1 0 0);
+  --card-2: oklch(0.975 0.005 183); /* ink-50 */
+  --card-foreground: oklch(0.304 0.048 201.4);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.304 0.048 201.4);
+  --secondary: oklch(0.952 0.009 188.1); /* ink-100 */
+  --secondary-foreground: oklch(0.304 0.048 201.4);
+  --muted: oklch(0.952 0.009 188.1);
+  --muted-foreground: oklch(0.53 0.066 198.5); /* ink-500, darkened for AA */
+  --accent: oklch(0.976 0.028 126.8); /* kiwi-50 */
+  --accent-foreground: oklch(0.304 0.048 201.4);
+  --destructive: oklch(0.592 0.192 31.6); /* #D8412A */
+  --border: oklch(0.929 0.011 190);
+  --input: oklch(0.929 0.011 190);
+  --sidebar: oklch(0.975 0.005 183); /* ink-50 */
+  --sidebar-foreground: oklch(0.304 0.048 201.4);
+  --sidebar-accent: oklch(0.952 0.009 188.1);
+  --sidebar-accent-foreground: oklch(0.304 0.048 201.4);
+  --sidebar-border: oklch(0.929 0.011 190);
+}
+
 html[data-theme="violet"] {
   --primary: oklch(0.526 0.247 293);
   --primary-foreground: oklch(0.985 0 0);

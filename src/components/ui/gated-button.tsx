@@ -33,7 +33,7 @@
 //
 //   <GatedButton
 //     canAct={canCreate}
-//     gateReason="create broadcasts"
+//     gateReason="createBroadcasts"
 //     onClick={() => router.push("/broadcasts/new")}
 //   >
 //     <Plus className="h-4 w-4" /> New Broadcast
@@ -41,25 +41,44 @@
 //
 // `canAct` defaults to true so unrelated usages still work.
 // When `canAct` is false, the button is `disabled` and the
-// wrapping span gets a `title` of `"Read-only — your role
-// can't ${gateReason}"`.
+// wrapping span gets the localised tooltip for `gateReason`.
+//
+// `gateReason` is an *action id*, not a phrase: the catalogue
+// (`Common.gated.*`) holds the whole tooltip sentence per id,
+// because the sentence doesn't decompose the same way in every
+// language — Turkish negates the verb ("rolünüz mesaj
+// gönderemez") rather than prefixing a fixed "can't" clause, so
+// a template + fragment split would only ever read naturally in
+// English. `GateAction` being a union means a typo is a build
+// error instead of a missing message key at runtime.
 // ============================================================
 
 import type { ComponentProps, ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+/** Actions a role can be gated out of. Each id is a key under
+ *  the `Common.gated` namespace holding the full tooltip. */
+export type GateAction =
+  | "sendMessages"
+  | "createBroadcasts"
+  | "addContacts"
+  | "deleteContacts"
+  | "createFlows"
+  | "createPipelines"
+  | "createDeals"
+  | "createAutomations";
 
 interface GatedButtonProps extends Omit<ComponentProps<typeof Button>, "title"> {
   /** False → button is disabled and the wrapper span shows the
    *  "Read-only" tooltip. Defaults to `true` so a `<GatedButton>`
    *  without the prop is just a Button. */
   canAct?: boolean;
-  /** Verb phrase that completes the sentence
-   *  `"Read-only — your role can't <gateReason>"`. Provided
-   *  per-call so each CTA can name what it does ("create flows",
-   *  "send messages", "add contacts"). */
-  gateReason?: string;
+  /** Which action this CTA performs. Looked up in the
+   *  `Common.gated` catalogue for the read-only tooltip. */
+  gateReason?: GateAction;
   /** Optional fallback title for the non-gated case. */
   title?: string;
   children?: ReactNode;
@@ -74,10 +93,9 @@ export function GatedButton({
   children,
   ...rest
 }: GatedButtonProps) {
+  const t = useTranslations("Common.gated");
   const effectivelyDisabled = disabled || !canAct;
-  const tooltip = !canAct && gateReason
-    ? `Read-only — your role can't ${gateReason}`
-    : title;
+  const tooltip = !canAct && gateReason ? t(gateReason) : title;
 
   return (
     <span

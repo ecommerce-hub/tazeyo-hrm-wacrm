@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
+import { useDateFnsLocale } from "@/lib/i18n/date";
 import { ReplyQuote } from "./reply-quote";
 import { MessageReactions } from "./message-reactions";
 import {
@@ -224,9 +225,10 @@ export function MessageBubble({
   onOpenMedia,
 }: MessageBubbleProps) {
   const t = useTranslations("Inbox.bubble");
+  const locale = useDateFnsLocale();
 
   const isAgent = message.sender_type === "agent" || message.sender_type === "bot";
-  const time = format(new Date(message.created_at), "HH:mm");
+  const time = format(new Date(message.created_at), "HH:mm", { locale });
 
   // Row alignment + width cap are owned by <MessageActions> so its hover
   // group matches the bubble's content area, not the full row.

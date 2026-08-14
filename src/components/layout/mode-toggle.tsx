@@ -17,10 +17,17 @@ import { useTranslations } from "next-intl";
  */
 export function ModeToggle({ className }: { className?: string }) {
   const t = useTranslations("ModeToggle");
+  const tAppearance = useTranslations("Settings.appearance");
   const { mode, toggleMode } = useTheme();
   const goingTo = mode === "dark" ? "light" : "dark";
-  const switchLabel = t("switchMode", { mode: goingTo });
-  
+  // The mode name is interpolated into the label, so it has to come
+  // from the catalogue too — passing the raw "light"/"dark" ids left
+  // an English word sitting inside an otherwise translated sentence.
+  const switchLabel = t("switchMode", {
+    mode: tAppearance(goingTo === "light" ? "modeLight" : "modeDark"),
+  });
+
+
   return (
     <button
       type="button"

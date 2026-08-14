@@ -31,6 +31,11 @@ const validList: InteractiveListPayload = {
   ],
 }
 
+/** Narrow to the failure branch so tests can read `code`. */
+function codeOf(result: ReturnType<typeof validateInteractivePayload>) {
+  return result.ok ? null : result.code
+}
+
 describe('validateInteractivePayload — buttons', () => {
   it('accepts a well-formed buttons payload', () => {
     expect(validateInteractivePayload(validButtons)).toEqual({ ok: true })
@@ -77,7 +82,14 @@ describe('validateInteractivePayload — buttons', () => {
         { id: 'dup', title: 'B' },
       ],
     })
-    expect(res).toEqual({ ok: false, error: 'Duplicate button id "dup".' })
+    // Failures carry a stable code + params so a client can localise
+    // them; `error` stays the English rendering for server callers.
+    expect(res).toEqual({
+      ok: false,
+      code: 'duplicateButtonId',
+      params: { id: 'dup' },
+      error: 'Duplicate button id "dup".',
+    })
   })
 
   it('rejects empty button id / title', () => {
@@ -87,6 +99,25 @@ describe('validateInteractivePayload — buttons', () => {
     expect(
       validateInteractivePayload({ ...validButtons, buttons: [{ id: 'a', title: '' }] }).ok,
     ).toBe(false)
+  })
+
+  it('reports a code (and params where the message interpolates)', () => {
+    expect(codeOf(validateInteractivePayload(undefined))).toBe('payloadRequired')
+    expect(codeOf(validateInteractivePayload({ ...validButtons, body: '' }))).toBe(
+      'bodyRequired',
+    )
+    expect(codeOf(validateInteractivePayload({ ...validButtons, buttons: [] }))).toBe(
+      'buttonsRequired',
+    )
+    const long = validateInteractivePayload({
+      ...validButtons,
+      buttons: [{ id: 'a', title: 'x'.repeat(21) }],
+    })
+    expect(long).toMatchObject({
+      ok: false,
+      code: 'buttonTitleTooLong',
+      params: { max: 20 },
+    })
   })
 })
 
@@ -127,7 +158,23 @@ describe('validateInteractivePayload — list', () => {
         { rows: [{ id: 'dup', title: 'B' }] },
       ],
     })
-    expect(res.ok).toBe(false)
+    expect(res).toMatchObject({
+      ok: false,
+      code: 'duplicateRowId',
+      params: { id: 'dup' },
+    })
+  })
+
+  it('reports a code for the list-shape failures', () => {
+    expect(codeOf(validateInteractivePayload({ ...validList, button_label: '' }))).toBe(
+      'listButtonLabelRequired',
+    )
+    expect(codeOf(validateInteractivePayload({ ...validList, sections: [] }))).toBe(
+      'sectionsRequired',
+    )
+    expect(codeOf(validateInteractivePayload({ ...validList, kind: 'nope' }))).toBe(
+      'unknownKind',
+    )
   })
 })
 

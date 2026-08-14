@@ -82,10 +82,31 @@ const TEMPLATE_ICONS = {
   UserPlus,
 } as const;
 
+/**
+ * Gallery-card copy for a template.
+ *
+ * `/api/flows/templates` returns the English `name`/`description` from
+ * `src/lib/flows/templates.ts` because those are also the values cloned
+ * into `flows.name` / `flows.description` — they have to stay stable and
+ * locale-independent on the wire. The card the user reads is UI copy, so
+ * it comes from `Flows.templates.<slug>.*`, with the wire value as the
+ * fallback for a template that shipped without catalogue keys.
+ */
+function templateCopy(
+  t: ReturnType<typeof useTranslations>,
+  template: TemplateSummary,
+  part: "name" | "description",
+): string {
+  const key = `${template.slug}.${part}`;
+  return t.has(key) ? t(key) : template[part];
+}
+
 export default function FlowsPage() {
   const router = useRouter();
   const canCreate = useCan("send-messages");
   const t = useTranslations("Flows.list");
+  const tToast = useTranslations("Flows.toasts");
+  const tTemplate = useTranslations("Flows.templates");
   const [flows, setFlows] = useState<FlowRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -102,7 +123,9 @@ export default function FlowsPage() {
           fetch("/api/flows/templates"),
         ]);
         if (!flowsRes.ok) {
-          throw new Error(`Failed to load flows: ${flowsRes.status}`);
+          throw new Error(
+            tToast("loadFlowsFailed", { status: flowsRes.status }),
+          );
         }
         const flowsJson = (await flowsRes.json()) as { flows: FlowRow[] };
         if (!cancelled) setFlows(flowsJson.flows ?? []);
@@ -141,7 +164,9 @@ export default function FlowsPage() {
           trigger_config: { keywords: [] },
         }),
       });
-      if (!res.ok) throw new Error(`Create failed: ${res.status}`);
+      if (!res.ok) {
+        throw new Error(tToast("createFailed", { status: res.status }));
+      }
       const json = (await res.json()) as { flow: FlowRow };
       setCreateOpen(false);
       setNewName("");
@@ -164,7 +189,9 @@ export default function FlowsPage() {
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error ?? `Clone failed: ${res.status}`);
+        throw new Error(
+          json.error ?? tToast("cloneFailed", { status: res.status }),
+        );
       }
       const json = (await res.json()) as { flow: FlowRow };
       setCreateOpen(false);
@@ -182,7 +209,9 @@ export default function FlowsPage() {
     if (!yes) return;
     try {
       const res = await fetch(`/api/flows/${flow.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+      if (!res.ok) {
+        throw new Error(tToast("deleteFailed", { status: res.status }));
+      }
       setFlows((prev) => prev.filter((f) => f.id !== flow.id));
       toast.success(t("deleteSuccess"));
     } catch (err) {
@@ -215,7 +244,7 @@ export default function FlowsPage() {
         </div>
         <GatedButton
           canAct={canCreate}
-          gateReason="create flows"
+          gateReason="createFlows"
           onClick={() => setCreateOpen(true)}
         >
           <Plus className="h-4 w-4" />
@@ -274,10 +303,10 @@ export default function FlowsPage() {
                     >
                       <Icon className="h-5 w-5 text-primary" />
                       <span className="text-sm font-semibold text-popover-foreground">
-                        {template.name}
+                        {templateCopy(tTemplate, template, "name")}
                       </span>
                       <span className="text-xs leading-relaxed text-muted-foreground">
-                        {template.description}
+                        {templateCopy(tTemplate, template, "description")}
                       </span>
                       <span className="mt-auto border-t border-border pt-2 text-[11px] text-muted-foreground">
                         {t("nodeCount", { count: template.node_count })}
@@ -345,7 +374,7 @@ function EmptyState({
       </p>
       <GatedButton
         canAct={canCreate}
-        gateReason="create flows"
+        gateReason="createFlows"
         onClick={onCreate}
         className="mt-5"
       >

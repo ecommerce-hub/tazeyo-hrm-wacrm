@@ -47,6 +47,7 @@ export function ContactForm({
   onViewExisting,
 }: ContactFormProps) {
   const t = useTranslations('Contacts.form');
+  const tErrors = useTranslations('Contacts.errors');
   const supabase = createClient();
   const { accountId } = useAuth();
   const isEdit = !!contact;
@@ -144,8 +145,8 @@ export function ContactForm({
         data: { session },
       } = await supabase.auth.getSession();
       const user = session?.user;
-      if (!user) throw new Error('Not authenticated');
-      if (!accountId) throw new Error('Your profile is not linked to an account.');
+      if (!user) throw new Error(tErrors('notAuthenticated'));
+      if (!accountId) throw new Error(tErrors('noAccountLinked'));
 
       let contactId = contact?.id;
 

@@ -19,6 +19,8 @@ import { format, formatDistanceToNow } from "date-fns";
 
 import { useTranslations } from "next-intl";
 
+import { useDateFnsLocale } from "@/lib/i18n/date";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -59,37 +61,39 @@ interface EventRow {
   created_at: string;
 }
 
+// The enum keys are the DB values and stay as-is; `labelKey` points at
+// the chip copy in the Flows.logs catalogue so the map holds no English.
 const STATUS_META: Record<
   RunRow["status"],
-  { label: string; classes: string; icon: typeof Clock }
+  { labelKey: string; classes: string; icon: typeof Clock }
 > = {
   active: {
-    label: "Active",
+    labelKey: "statusActive",
     classes: "border-emerald-600/40 bg-emerald-500/10 text-emerald-300",
     icon: PlayCircle,
   },
   completed: {
-    label: "Completed",
+    labelKey: "statusCompleted",
     classes: "border-border bg-muted text-muted-foreground",
     icon: CircleCheck,
   },
   handed_off: {
-    label: "Handed off",
+    labelKey: "statusHandedOff",
     classes: "border-amber-600/40 bg-amber-500/10 text-amber-300",
     icon: UserPlus,
   },
   timed_out: {
-    label: "Timed out",
+    labelKey: "statusTimedOut",
     classes: "border-border bg-muted/60 text-muted-foreground",
     icon: Clock,
   },
   paused_by_agent: {
-    label: "Paused by agent",
+    labelKey: "statusPaused",
     classes: "border-border bg-muted text-muted-foreground",
     icon: PauseCircle,
   },
   failed: {
-    label: "Failed",
+    labelKey: "statusFailed",
     classes: "border-red-600/40 bg-red-500/10 text-red-300",
     icon: CircleAlert,
   },
@@ -100,6 +104,7 @@ export default function FlowRunsPage() {
   const params = useParams<{ id: string }>();
   const t = useTranslations("Flows.logs");
   const tEdit = useTranslations("Flows.edit");
+  const tToast = useTranslations("Flows.toasts");
 
   const [flow, setFlow] = useState<{ id: string; name: string } | null>(null);
   const [runs, setRuns] = useState<RunRow[]>([]);
@@ -118,7 +123,9 @@ export default function FlowRunsPage() {
           if (!cancelled) setNotFound(true);
           return;
         }
-        if (!res.ok) throw new Error(`Failed: ${res.status}`);
+        if (!res.ok) {
+          throw new Error(tToast("requestFailed", { status: res.status }));
+        }
         const json = (await res.json()) as {
           flow: { id: string; name: string };
           runs: RunRow[];
@@ -224,6 +231,7 @@ function RunCard({
   onToggle: () => void;
   t: ReturnType<typeof useTranslations>;
 }) {
+  const locale = useDateFnsLocale();
   const meta = STATUS_META[run.status];
   const StatusIcon = meta.icon;
   const contactLabel =
@@ -231,6 +239,7 @@ function RunCard({
   const duration = run.ended_at
     ? formatDistanceToNow(new Date(run.ended_at), {
         addSuffix: false,
+        locale,
       })
     : null;
   return (
@@ -252,19 +261,7 @@ function RunCard({
             </span>
             <Badge variant="outline" className={cn("gap-1", meta.classes)}>
               <StatusIcon className="h-3 w-3" />
-              {t(
-                run.status === "active"
-                  ? "statusActive"
-                  : run.status === "completed"
-                  ? "statusCompleted"
-                  : run.status === "handed_off"
-                  ? "statusHandedOff"
-                  : run.status === "timed_out"
-                  ? "statusTimedOut"
-                  : run.status === "paused_by_agent"
-                  ? "statusPaused"
-                  : "statusFailed"
-              )}
+              {t(meta.labelKey)}
             </Badge>
             {run.status === "active" && run.current_node_key && (
               <code className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
@@ -273,7 +270,11 @@ function RunCard({
             )}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-            <span>{t("started", { time: format(new Date(run.started_at), "PP p") })}</span>
+            <span>
+              {t("started", {
+                time: format(new Date(run.started_at), "PP p", { locale }),
+              })}
+            </span>
             {run.reprompt_count > 0 && (
               <span>· {t("reprompts", { count: run.reprompt_count })}</span>
             )}
@@ -321,11 +322,12 @@ const EVENT_COLOR: Record<string, string> = {
 };
 
 function EventLine({ ev }: { ev: EventRow }) {
+  const locale = useDateFnsLocale();
   const cls = EVENT_COLOR[ev.event_type] ?? "text-muted-foreground";
   return (
     <div className="flex items-start gap-2 rounded-md px-2 py-1 text-xs">
       <span className="w-32 shrink-0 text-[10px] text-muted-foreground">
-        {format(new Date(ev.created_at), "HH:mm:ss")}
+        {format(new Date(ev.created_at), "HH:mm:ss", { locale })}
       </span>
       <span className={cn("w-32 shrink-0 font-mono text-[10px]", cls)}>
         {ev.event_type}

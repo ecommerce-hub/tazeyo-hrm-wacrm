@@ -37,10 +37,11 @@ import { RequireRole } from '@/components/auth/require-role';
 import { useAuth } from '@/hooks/use-auth';
 import {
   API_SCOPES,
-  SCOPE_DESCRIPTIONS,
+  SCOPE_DESCRIPTION_KEYS,
   type ApiScope,
 } from '@/lib/api-keys/scopes';
 import { useTranslations } from 'next-intl';
+import { useIntlLocale } from '@/lib/i18n/date';
 import { SettingsPanelHead } from './settings-panel-head';
 
 interface ApiKey {
@@ -54,8 +55,8 @@ interface ApiKey {
   created_at: string;
 }
 
-function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
+function fmtDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -72,6 +73,7 @@ function keyStatus(k: ApiKey): 'active' | 'revoked' | 'expired' {
 export function ApiKeysSettings() {
   const { canEditSettings } = useAuth();
   const t = useTranslations('Settings.apiKeys');
+  const intlLocale = useIntlLocale();
 
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,13 +232,13 @@ export function ApiKeysSettings() {
                         )}
                       </div>
                       <p className="text-muted-foreground mt-1.5 text-xs">
-                        {t('created', { date: fmtDate(k.created_at) })}
+                        {t('created', { date: fmtDate(k.created_at, intlLocale) })}
                         {' · '}
                         {k.last_used_at
-                          ? t('lastUsed', { date: fmtDate(k.last_used_at) })
+                          ? t('lastUsed', { date: fmtDate(k.last_used_at, intlLocale) })
                           : t('neverUsed')}
                         {k.expires_at && status !== 'expired'
-                          ? ` · ${t('expires', { date: fmtDate(k.expires_at) })}`
+                          ? ` · ${t('expires', { date: fmtDate(k.expires_at, intlLocale) })}`
                           : ''}
                       </p>
                     </div>
@@ -290,6 +292,7 @@ function CreateKeyDialog({
   onCreated: () => void;
 }) {
   const t = useTranslations('Settings.apiKeys');
+  const tScopes = useTranslations('Settings.apiKeys.scopes');
   const [name, setName] = useState('');
   const [scopes, setScopes] = useState<ApiScope[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -439,7 +442,7 @@ function CreateKeyDialog({
                           {scope}
                         </span>
                         <span className="text-muted-foreground block text-xs">
-                          {SCOPE_DESCRIPTIONS[scope]}
+                          {tScopes(SCOPE_DESCRIPTION_KEYS[scope])}
                         </span>
                       </span>
                     </label>

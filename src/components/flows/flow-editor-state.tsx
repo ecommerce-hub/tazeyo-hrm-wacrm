@@ -239,6 +239,7 @@ export function FlowEditorProvider({
 }: ProviderProps) {
   const router = useRouter();
   const t = useTranslations("Flows.editorState");
+  const tEditor = useTranslations("Flows.editor");
 
   const [state, setStateRaw] = useState<BuilderState>(() => ({
     name: initialFlow.name,
@@ -346,12 +347,14 @@ export function FlowEditorProvider({
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error ?? `Save failed: ${res.status}`);
+        throw new Error(
+          json.error ?? tEditor("saveFailedStatus", { status: String(res.status) }),
+        );
       }
       setDirty(false);
       toast.success(t("saved"));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Save failed";
+      const msg = err instanceof Error ? err.message : tEditor("saveFailed");
       toast.error(msg);
     } finally {
       setSaving(false);
@@ -380,7 +383,10 @@ export function FlowEditorProvider({
         });
         if (!res.ok) {
           const json = await res.json().catch(() => ({}));
-          throw new Error(json.error ?? `Status update failed: ${res.status}`);
+          throw new Error(
+            json.error ??
+              tEditor("statusUpdateFailedStatus", { status: String(res.status) }),
+          );
         }
         setStateRaw((s) => ({ ...s, status: next }));
         toast.success(
@@ -391,7 +397,8 @@ export function FlowEditorProvider({
               : t("statusDraft")
         );
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Status update failed";
+        const msg =
+          err instanceof Error ? err.message : tEditor("statusUpdateFailed");
         toast.error(msg);
       } finally {
         setActivating(false);
@@ -403,17 +410,21 @@ export function FlowEditorProvider({
   // ---- Delete ----
   const deleteFlow = useCallback(async () => {
     const yes = window.confirm(
-      `Delete "${state.name}"? Any active runs end immediately. This can't be undone.`,
+      tEditor("deleteConfirm", { name: state.name }),
     );
     if (!yes) return;
     try {
       const res = await fetch(`/api/flows/${initialFlow.id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+      if (!res.ok) {
+        throw new Error(
+          tEditor("deleteFailedStatus", { status: String(res.status) }),
+        );
+      }
       router.push("/flows");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Delete failed";
+      const msg = err instanceof Error ? err.message : tEditor("deleteFailed");
       toast.error(msg);
     }
   }, [initialFlow.id, router, state.name]);

@@ -15,6 +15,13 @@
  * Trigger-scoped issues are NOT clickable from canvas — trigger
  * config is a list-only panel (it's a flat form, not a graph
  * concept). User can switch to List to address them.
+ *
+ * `validateFlowForActivation` also runs server-side (the activate
+ * route), so it hands back a stable `code` + `params` per issue
+ * instead of localised prose. Resolving that against
+ * `Flows.validation.messages.*` is this component's job — its
+ * English `message` is the API/log representation and is only used
+ * as a last-resort fallback for a code with no catalogue entry.
  */
 
 import { CircleAlert, CircleCheck } from "lucide-react";
@@ -22,6 +29,23 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { ValidationIssue } from "@/lib/flows/validate";
 import { useFlowEditor } from "./flow-editor-state";
+
+/**
+ * Resolve one issue's `code` (+ `params`) against the catalogue.
+ *
+ * Falls back to the English `message` the validator carries for the
+ * server path when a code has no catalogue entry — that only happens
+ * if a new rule ships without its key, and a stale English line beats
+ * rendering the raw keypath at the user.
+ */
+function issueText(
+  issue: ValidationIssue,
+  t: ReturnType<typeof useTranslations>,
+): string {
+  const key = `messages.${issue.code}`;
+  if (!issue.code || !t.has(key)) return issue.message;
+  return t(key, issue.params);
+}
 
 export function ValidationPanel() {
   const { issues, requestFlash } = useFlowEditor();
@@ -79,6 +103,10 @@ export function IssueLine({
   onJump?: (key: string) => void;
   t?: ReturnType<typeof useTranslations>;
 }) {
+  // Callers that already hold the namespace can pass it; the rest
+  // (flow-builder's per-node lists) get it from context here.
+  const tOwn = useTranslations("Flows.validation");
+  const tr = t ?? tOwn;
   const tone =
     issue.severity === "error" ? "text-red-300" : "text-amber-300";
   const iconTone =
@@ -92,7 +120,7 @@ export function IssueLine({
             {issue.node_key}
           </code>
         )}
-        {issue.message}
+        {issueText(issue, tr)}
       </span>
     </>
   );
@@ -109,7 +137,7 @@ export function IssueLine({
           "flex w-full items-start gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors hover:bg-muted/60",
           tone,
         )}
-        aria-label={t ? t("jumpToNode", { key: issue.node_key! }) : `Jump to node ${issue.node_key}`}
+        aria-label={tr("jumpToNode", { key: issue.node_key! })}
       >
         {body}
       </button>

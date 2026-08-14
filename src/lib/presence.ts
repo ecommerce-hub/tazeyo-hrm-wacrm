@@ -10,7 +10,23 @@
 // `now` is always passed in (epoch ms) rather than read from the
 // clock, so derivation and formatting stay deterministic and
 // testable. See presence.test.ts.
+//
+// Copy lives in the message catalogue under `Common.presence.*`.
+// This module can't call `useTranslations` (it isn't a component),
+// so the label helpers take the translator as a parameter — the
+// same pattern `summarizeNode` uses in src/components/flows/shared.tsx.
+// Every caller is a client component, so there's no server path that
+// would need an English-only fallback.
 // ============================================================
+
+/**
+ * The slice of a next-intl translator these helpers need: a
+ * `useTranslations("Common.presence")` instance passes as-is.
+ */
+export type PresenceTranslator = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string;
 
 /** How often the active client heartbeats its own presence row. */
 export const HEARTBEAT_MS = 30_000;
@@ -64,48 +80,53 @@ export function derivePresence(
  * whereas presence needs an injected `now` — so the dots and labels
  * advance in lockstep and the unit tests stay deterministic — plus
  * full-sentence wording for the tooltip ("Offline — last seen …").
+ *
+ * Singular/plural is handled by ICU in the catalogue, not by branching
+ * here, so locales with different plural rules (Turkish has one form,
+ * Korean none) render correctly without touching this code.
  */
 export function formatLastSeen(
   lastSeenAt: string | null | undefined,
   now: number,
+  t: PresenceTranslator,
 ): string {
-  if (!lastSeenAt) return "a while ago";
+  if (!lastSeenAt) return t("lastSeen.unknown");
   const last = new Date(lastSeenAt).getTime();
-  if (Number.isNaN(last)) return "a while ago";
+  if (Number.isNaN(last)) return t("lastSeen.unknown");
 
   const diff = Math.max(0, now - last);
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins === 1) return "1 minute ago";
-  if (mins < 60) return `${mins} minutes ago`;
+  if (mins < 1) return t("lastSeen.justNow");
+  if (mins < 60) return t("lastSeen.minutes", { count: mins });
 
   const hours = Math.floor(mins / 60);
-  if (hours === 1) return "1 hour ago";
-  if (hours < 24) return `${hours} hours ago`;
+  if (hours < 24) return t("lastSeen.hours", { count: hours });
 
   const days = Math.floor(hours / 24);
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
+  return t("lastSeen.days", { count: days });
 }
 
 /**
- * Tooltip / aria label for a presence dot, e.g.
+ * Tooltip / aria label for a presence dot. In English, e.g.
  *   "Online — active now"
  *   "Away — idle"
  *   "Offline — last seen 2 hours ago"
+ *
+ * `t` is a `useTranslations("Common.presence")` instance.
  */
 export function presenceLabel(
   status: PresenceStatus,
   lastSeenAt: string | null | undefined,
   now: number,
+  t: PresenceTranslator,
 ): string {
   switch (status) {
     case "online":
-      return "Online — active now";
+      return t("online");
     case "away":
-      return "Away — idle";
+      return t("away");
     case "offline":
-      return `Offline — last seen ${formatLastSeen(lastSeenAt, now)}`;
+      return t("offline", { when: formatLastSeen(lastSeenAt, now, t) });
   }
 }
 

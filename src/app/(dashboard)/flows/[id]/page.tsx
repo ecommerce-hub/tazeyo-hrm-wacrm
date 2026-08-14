@@ -26,6 +26,7 @@ export default function FlowEditorPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const t = useTranslations("Flows.edit");
+  const tToast = useTranslations("Flows.toasts");
 
   const [flow, setFlow] = useState<FlowRow | null>(null);
   const [nodes, setNodes] = useState<FlowNodeRow[]>([]);
@@ -42,7 +43,9 @@ export default function FlowEditorPage() {
           if (!cancelled) setNotFound(true);
           return;
         }
-        if (!res.ok) throw new Error(`Failed: ${res.status}`);
+        if (!res.ok) {
+          throw new Error(tToast("requestFailed", { status: res.status }));
+        }
         const json = (await res.json()) as {
           flow: FlowRow;
           nodes: FlowNodeRow[];

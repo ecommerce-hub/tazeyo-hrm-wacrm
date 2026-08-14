@@ -49,4 +49,31 @@ export function mondayIndex(d: Date): number {
   return (jsDow + 6) % 7
 }
 
+/**
+ * Canonical English weekday keys, Monday-first — i.e. indexed by
+ * `mondayIndex()`. NOT for display: charts must use
+ * `weekdayShortLabels(locale)` so the axis follows the app locale.
+ */
 export const DOW_SHORT_MON_FIRST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+
+/**
+ * Localised short weekday names, Monday-first, aligned with
+ * `mondayIndex()` and `DOW_SHORT_MON_FIRST`.
+ *
+ * Sourced from `Intl` rather than the message catalogue: weekday names
+ * are the one bit of copy every locale already ships, so there is
+ * nothing to translate or keep in sync.
+ *
+ * @param locale BCP-47 tag — pass `useIntlLocale()` from src/lib/i18n/date.ts.
+ */
+export function weekdayShortLabels(locale: string): string[] {
+  // 2024-01-01 was a Monday. Format in UTC so a negative-offset
+  // timezone cannot shift the anchor back to Sunday.
+  const fmt = new Intl.DateTimeFormat(locale, {
+    weekday: 'short',
+    timeZone: 'UTC',
+  })
+  return Array.from({ length: 7 }, (_, i) =>
+    fmt.format(new Date(Date.UTC(2024, 0, 1 + i))),
+  )
+}

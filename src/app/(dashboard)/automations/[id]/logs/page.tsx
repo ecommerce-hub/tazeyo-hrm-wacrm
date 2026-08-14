@@ -21,6 +21,7 @@ import type {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { formatRelative } from "@/lib/automations/trigger-meta"
+import { useIntlLocale } from "@/lib/i18n/date"
 
 export default function AutomationLogsPage({
   params,
@@ -30,6 +31,8 @@ export default function AutomationLogsPage({
   const { id } = use(params)
   const router = useRouter()
   const t = useTranslations("Automations.logs")
+  const tRelative = useTranslations("Automations.relativeTime")
+  const locale = useIntlLocale()
 
   const [automation, setAutomation] = useState<Automation | null>(null)
   const [logs, setLogs] = useState<AutomationLog[] | null>(null)
@@ -132,12 +135,14 @@ export default function AutomationLogsPage({
                       {log.contact?.name ?? log.contact?.phone ?? t("unknownContact")}
                     </div>
                     <div className="truncate text-xs text-muted-foreground">
-                      {log.trigger_event} · {log.steps_executed?.length ?? 0}{" "}
-                      {log.steps_executed?.length === 1 ? t("step", { count: 1 }).replace("1 ", "") : t("stepPlural", { count: log.steps_executed?.length ?? 0 }).replace(/^[0-9]+ /, "")}
+                      {log.trigger_event} ·{" "}
+                      {log.steps_executed?.length === 1
+                        ? t("step", { count: 1 })
+                        : t("stepPlural", { count: log.steps_executed?.length ?? 0 })}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {formatRelative(log.created_at)}
+                    {formatRelative(log.created_at, tRelative, locale)}
                   </div>
                 </button>
                 {isOpen && (

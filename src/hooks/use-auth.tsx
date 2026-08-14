@@ -54,6 +54,24 @@ interface AccountSummary {
  * becomes read-only — the whole UI renders, and nothing saves. That is
  * indistinguishable from a bug unless we say so (issue #471).
  */
+/**
+ * Why the account/role couldn't be established.
+ *
+ * Two flavours, because the reasons come from two places: `raw` carries
+ * a message straight out of Supabase (untranslatable, and useful
+ * verbatim in a bug report), while `code` names one of our own checks so
+ * the render site can localise it — `AccountAccess.errors.<code>` — the
+ * provider itself must stay translator-free to keep working outside a
+ * locale boundary.
+ */
+export type AccountStatusDetail =
+  | { kind: "raw"; message: string }
+  | {
+      kind: "code";
+      code: "noProfileRow" | "profileFetchFailed" | "missingTenancy";
+      params?: Record<string, string>;
+    };
+
 export type AccountStatus =
   /** Profile row still in flight. */
   | "loading"
@@ -104,8 +122,8 @@ interface AuthContextValue {
    * rather than letting the user discover it one failed save at a time.
    */
   accountStatus: AccountStatus;
-  /** Underlying message when `accountStatus` is 'error' / 'unlinked'. */
-  accountStatusDetail: string | null;
+  /** Underlying reason when `accountStatus` is 'error' / 'unlinked'. */
+  accountStatusDetail: AccountStatusDetail | null;
   /** Account id the current user belongs to. Null while loading. */
   accountId: string | null;
   /** Role within that account. Null while loading. */
@@ -166,7 +184,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   // Why the account/role couldn't be established, when it couldn't.
   // Null on the happy path.
-  const [statusDetail, setStatusDetail] = useState<string | null>(null);
+  const [statusDetail, setStatusDetail] = useState<AccountStatusDetail | null>(
+    null,
+  );
   // Tracked separately from `loading`. The session settles fast (one
   // local cookie read); the profile fetch crosses the network and
   // settles later. Callers that gate on `profile.*` need to know which
@@ -218,7 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           continue;
         }
         lastFetchedUserIdRef.current = null;
-        setStatusDetail(error.message);
+        setStatusDetail({ kind: "raw", message: error.message });
         return;
       }
 
@@ -288,18 +308,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // whose bootstrap didn't complete (handle_new_user swallows a
           // failure as a WARNING) or one predating that migration.
           // Every insert and update they attempt will be denied by RLS.
-          setStatusDetail(
-            `profile ${data.id} has no ${!data.account_id ? "account_id" : "account_role"}`,
-          );
+          setStatusDetail({
+            kind: "code",
+            code: "missingTenancy",
+            // The column name stays verbatim — it's a schema
+            // identifier a self-hoster acts on, not prose.
+            params: {
+              profileId: data.id,
+              column: !data.account_id ? "account_id" : "account_role",
+            },
+          });
         }
       } else {
         lastFetchedUserIdRef.current = null;
-        setStatusDetail("no profiles row for the signed-in user");
+        setStatusDetail({ kind: "code", code: "noProfileRow" });
       }
     } catch (err) {
       console.error("[AuthProvider] fetchProfile threw:", err);
       lastFetchedUserIdRef.current = null;
-      setStatusDetail(err instanceof Error ? err.message : "profile fetch failed");
+      setStatusDetail(
+        err instanceof Error
+          ? { kind: "raw", message: err.message }
+          : { kind: "code", code: "profileFetchFailed" },
+      );
     } finally {
       setProfileLoading(false);
     }

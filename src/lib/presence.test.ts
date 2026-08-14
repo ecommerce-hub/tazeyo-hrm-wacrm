@@ -12,6 +12,18 @@ import {
 const NOW = new Date("2026-06-22T12:00:00.000Z").getTime();
 const ago = (ms: number) => new Date(NOW - ms).toISOString();
 
+// The label helpers now take a next-intl translator (copy lives under
+// `Common.presence.*`), so these assert the catalogue key + values the
+// helper asks for rather than a baked-in English sentence. `t` here is
+// a stub that renders "key(param=value)" — enough to pin down both the
+// key chosen and the interpolation passed with it.
+const t = (key: string, values?: Record<string, string | number>) =>
+  values
+    ? `${key}(${Object.entries(values)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(",")})`
+    : key;
+
 describe("derivePresence", () => {
   it("returns the stored status for a fresh heartbeat", () => {
     expect(derivePresence("online", ago(1_000), NOW)).toBe("online");
@@ -44,32 +56,43 @@ describe("derivePresence", () => {
 
 describe("formatLastSeen", () => {
   it("describes recent activity coarsely", () => {
-    expect(formatLastSeen(ago(10_000), NOW)).toBe("just now");
-    expect(formatLastSeen(ago(60_000), NOW)).toBe("1 minute ago");
-    expect(formatLastSeen(ago(5 * 60_000), NOW)).toBe("5 minutes ago");
+    expect(formatLastSeen(ago(10_000), NOW, t)).toBe("lastSeen.justNow");
+    // Singular is an ICU branch in the catalogue now, so one minute and
+    // five minutes share a key and differ only in `count`.
+    expect(formatLastSeen(ago(60_000), NOW, t)).toBe("lastSeen.minutes(count=1)");
+    expect(formatLastSeen(ago(5 * 60_000), NOW, t)).toBe(
+      "lastSeen.minutes(count=5)",
+    );
   });
 
   it("rolls up into hours and days", () => {
-    expect(formatLastSeen(ago(60 * 60_000), NOW)).toBe("1 hour ago");
-    expect(formatLastSeen(ago(2 * 60 * 60_000), NOW)).toBe("2 hours ago");
-    expect(formatLastSeen(ago(24 * 60 * 60_000), NOW)).toBe("1 day ago");
-    expect(formatLastSeen(ago(3 * 24 * 60 * 60_000), NOW)).toBe("3 days ago");
+    expect(formatLastSeen(ago(60 * 60_000), NOW, t)).toBe(
+      "lastSeen.hours(count=1)",
+    );
+    expect(formatLastSeen(ago(2 * 60 * 60_000), NOW, t)).toBe(
+      "lastSeen.hours(count=2)",
+    );
+    expect(formatLastSeen(ago(24 * 60 * 60_000), NOW, t)).toBe(
+      "lastSeen.days(count=1)",
+    );
+    expect(formatLastSeen(ago(3 * 24 * 60 * 60_000), NOW, t)).toBe(
+      "lastSeen.days(count=3)",
+    );
   });
 
   it("falls back gracefully on missing/invalid input", () => {
-    expect(formatLastSeen(null, NOW)).toBe("a while ago");
-    expect(formatLastSeen("nonsense", NOW)).toBe("a while ago");
+    expect(formatLastSeen(null, NOW, t)).toBe("lastSeen.unknown");
+    expect(formatLastSeen("nonsense", NOW, t)).toBe("lastSeen.unknown");
   });
 });
 
 describe("presenceLabel", () => {
   it("labels each state for the tooltip", () => {
-    expect(presenceLabel("online", ago(1_000), NOW)).toBe(
-      "Online — active now",
-    );
-    expect(presenceLabel("away", ago(1_000), NOW)).toBe("Away — idle");
-    expect(presenceLabel("offline", ago(2 * 60 * 60_000), NOW)).toBe(
-      "Offline — last seen 2 hours ago",
+    expect(presenceLabel("online", ago(1_000), NOW, t)).toBe("online");
+    expect(presenceLabel("away", ago(1_000), NOW, t)).toBe("away");
+    // The offline label embeds the relative time as the `when` value.
+    expect(presenceLabel("offline", ago(2 * 60 * 60_000), NOW, t)).toBe(
+      "offline(when=lastSeen.hours(count=2))",
     );
   });
 });

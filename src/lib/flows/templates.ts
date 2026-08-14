@@ -17,6 +17,19 @@
  * data; (b) keeps templates portable across self-hosted instances
  * without migrations; (c) editing in source is the lowest-friction
  * way to add the next template.
+ *
+ * Localisation — the split matters here:
+ *   - `name` / `description` are BOTH gallery-card chrome AND the seed
+ *     values cloned into `flows.name` / `flows.description`. They stay
+ *     English in this module (that's what the row gets); the gallery
+ *     renders `Flows.templates.<slug>.*` over the top. Adding a
+ *     template means adding those two keys in en/ko/tr too.
+ *   - Everything inside `nodes[]` — `text`, `prompt_text`, `footer_text`,
+ *     row/button titles, handoff `note` — is CONTENT, not UI copy. It is
+ *     seeded into `flow_nodes.config` and then sent verbatim to a
+ *     WhatsApp customer (or shown to an agent as the handoff note), so
+ *     it is never translated by the app: the account owner edits it in
+ *     the builder to their own language and wording after cloning.
  */
 
 import type {
@@ -56,8 +69,20 @@ export interface FlowTemplateNode {
 }
 
 export interface FlowTemplate {
+  /**
+   * Stable id. Doubles as the i18n key for the gallery card:
+   * `Flows.templates.<slug>.name` / `.description`.
+   */
   slug: string;
+  /**
+   * Seed value for `flows.name` when the template is cloned — this is
+   * written to the DB and is the flow's real name from then on, so it
+   * stays English here (a clone must not depend on the locale of the
+   * browser that clicked the card, and the user renames it anyway).
+   * The gallery card renders `Flows.templates.<slug>.name` instead.
+   */
   name: string;
+  /** Seed value for `flows.description`. Same rule as `name`. */
   description: string;
   /** Used by the gallery to surface a relevant icon. lucide-react name. */
   icon: "MessageSquare" | "HelpCircle" | "UserPlus";

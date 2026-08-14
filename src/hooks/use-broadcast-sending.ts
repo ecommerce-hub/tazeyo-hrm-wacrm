@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -158,6 +159,11 @@ async function fetchCustomValueIndex(
 
 export function useBroadcastSending(): UseBroadcastSendingReturn {
   const { accountId } = useAuth();
+  // Everything thrown out of this hook is toasted by the wizard, so the
+  // messages are localised here. Strings written to
+  // `broadcast_recipients.error_message` are deliberately NOT — they are
+  // stored data, not UI copy.
+  const t = useTranslations('Broadcasts.errors');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -168,7 +174,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
 
     if (audience.type === 'all') {
       const { data, error } = await supabase.from('contacts').select('*');
-      if (error) throw new Error(`Failed to fetch contacts: ${error.message}`);
+      if (error)
+        throw new Error(t('fetchContacts', { error: error.message }));
       contacts = data ?? [];
     } else if (
       audience.type === 'tags' &&
@@ -181,7 +188,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
         .in('tag_id', audience.tagIds);
 
       if (tagError)
-        throw new Error(`Failed to fetch contact tags: ${tagError.message}`);
+        throw new Error(t('fetchContactTags', { error: tagError.message }));
 
       if (contactTags && contactTags.length > 0) {
         const uniqueContactIds = [
@@ -191,7 +198,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
           .from('contacts')
           .select('*')
           .in('id', uniqueContactIds);
-        if (error) throw new Error(`Failed to fetch contacts: ${error.message}`);
+        if (error)
+          throw new Error(t('fetchContacts', { error: error.message }));
         contacts = data ?? [];
       }
     } else if (audience.type === 'custom_field' && audience.customField) {
@@ -236,10 +244,10 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
     } = await supabase.auth.getSession();
     const user = session?.user;
     if (!user) {
-      throw new Error('You are not signed in.');
+      throw new Error(t('notSignedIn'));
     }
     if (!accountId) {
-      throw new Error('Your profile is not linked to an account.');
+      throw new Error(t('notLinked'));
     }
 
     // De-duplicate by phone within the CSV (users can paste duplicates).
@@ -256,7 +264,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       .eq('user_id', user.id)
       .in('phone', phones);
     if (lookupErr) {
-      throw new Error(`Failed to look up CSV contacts: ${lookupErr.message}`);
+      throw new Error(t('lookupCsvContacts', { error: lookupErr.message }));
     }
 
     const byPhone = new Map<string, Contact>();
@@ -283,7 +291,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
         .insert(chunk)
         .select();
       if (insertErr) {
-        throw new Error(`Failed to create CSV contacts: ${insertErr.message}`);
+        throw new Error(t('createCsvContacts', { error: insertErr.message }));
       }
       for (const c of (inserted ?? []) as Contact[]) {
         if (c.phone) byPhone.set(c.phone, c);
@@ -316,7 +324,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
 
     const { data: matches, error: matchErr } = await query;
     if (matchErr)
-      throw new Error(`Custom-field filter failed: ${matchErr.message}`);
+      throw new Error(t('customFieldFilter', { error: matchErr.message }));
 
     const contactIds = [...new Set((matches ?? []).map((m) => m.contact_id))];
     if (contactIds.length === 0) return [];
@@ -325,7 +333,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       .from('contacts')
       .select('*')
       .in('id', contactIds);
-    if (error) throw new Error(`Failed to fetch contacts: ${error.message}`);
+    if (error) throw new Error(t('fetchContacts', { error: error.message }));
     return data ?? [];
   }
 
@@ -346,10 +354,10 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) {
-        throw new Error('You are not signed in.');
+        throw new Error(t('notSignedIn'));
       }
       if (!accountId) {
-        throw new Error('Your profile is not linked to an account.');
+        throw new Error(t('notLinked'));
       }
 
       // ── Step 1: Resolve audience contacts ─────────────────────────
@@ -357,7 +365,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       const contacts = await resolveAudience(payload.audience);
 
       if (contacts.length === 0) {
-        throw new Error('No contacts found for this audience.');
+        throw new Error(t('noContacts'));
       }
 
       // ── Step 2: Create broadcast row ──────────────────────────────
@@ -390,7 +398,9 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
 
       if (broadcastError || !broadcast) {
         throw new Error(
-          `Failed to create broadcast: ${broadcastError?.message ?? 'unknown error'}`,
+          t('createBroadcast', {
+            error: broadcastError?.message ?? t('unknownReason'),
+          }),
         );
       }
 
@@ -443,7 +453,10 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
             })
             .eq('id', broadcast.id);
           throw new Error(
-            `Failed to insert recipient batch ${i / INSERT_BATCH_SIZE + 1}: ${recipientError.message}`,
+            t('insertRecipients', {
+              batch: i / INSERT_BATCH_SIZE + 1,
+              error: recipientError.message,
+            }),
           );
         }
       }
@@ -456,7 +469,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
         .eq('broadcast_id', broadcast.id);
 
       if (recipientsFetchError || !recipients) {
-        throw new Error('Failed to fetch broadcast recipients');
+        throw new Error(t('fetchRecipients'));
       }
 
       let failedCount = 0;

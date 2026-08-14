@@ -1,7 +1,7 @@
 "use client"
 
 import { Clock } from 'lucide-react'
-import { DOW_SHORT_MON_FIRST } from '@/lib/dashboard/date-utils'
+import { weekdayShortLabels } from '@/lib/dashboard/date-utils'
 import type { ResponseTimeSummary } from '@/lib/dashboard/types'
 import { BarChart } from '@/components/tremor/bar-chart'
 import { EmptyState } from './empty-state'
@@ -20,12 +20,7 @@ interface ResponseTimeChartProps {
 }
 
 import { useTranslations } from 'next-intl'
-
-// Single category, single colour — the data is "average minutes
-// per weekday". Tremor expects categories as the second tuple in
-// the row object, so we shape the buckets into
-// `{ day: 'Mon', 'Avg minutes': 4.2 }` rows below.
-const CATEGORY = 'Avg minutes'
+import { useIntlLocale } from '@/lib/i18n/date'
 
 export function ResponseTimeChart({
   data,
@@ -33,6 +28,14 @@ export function ResponseTimeChart({
   thresholdMinutes = 5,
 }: ResponseTimeChartProps) {
   const t = useTranslations('Dashboard.responseTimeChart')
+  const tSeries = useTranslations('Dashboard.responseTime')
+  const locale = useIntlLocale()
+  // Single category, single colour — the data is "average minutes
+  // per weekday". Tremor uses the row key as the series name (legend +
+  // tooltip), so the localised label doubles as the object key in the
+  // rows we build below.
+  const category = tSeries('avgMinutes')
+  const weekdays = weekdayShortLabels(locale)
   const hasData = data?.buckets.some((b) => b.avgMinutes != null) ?? false
 
   // Map buckets → Tremor rows. Null `avgMinutes` (no samples)
@@ -41,8 +44,8 @@ export function ResponseTimeChart({
   // surface "no samples" copy without losing the data shape.
   const chartData =
     data?.buckets.map((b, i) => ({
-      day: DOW_SHORT_MON_FIRST[i],
-      [CATEGORY]: b.avgMinutes ?? 0,
+      day: weekdays[i],
+      [category]: b.avgMinutes ?? 0,
       samples: b.samples,
     })) ?? []
 
@@ -93,7 +96,7 @@ export function ResponseTimeChart({
           <BarChart
             data={chartData}
             index="day"
-            categories={[CATEGORY]}
+            categories={[category]}
             // 'violet' maps to Tailwind's `fill-violet-500` — matches
             // the brand accent the hand-rolled bars used (#7c3aed).
             colors={['violet']}

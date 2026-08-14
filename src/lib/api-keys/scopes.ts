@@ -25,15 +25,26 @@ export const API_SCOPES = [
 
 export type ApiScope = (typeof API_SCOPES)[number];
 
-/** Human-readable descriptions, surfaced in the key-creation UI. */
-export const SCOPE_DESCRIPTIONS: Record<ApiScope, string> = {
-  'messages:send': 'Send WhatsApp messages',
-  'messages:read': 'Read messages and their delivery status',
-  'contacts:read': 'List and read contacts',
-  'contacts:write': 'Create and update contacts',
-  'conversations:read': 'List and read conversations',
-  'broadcasts:send': 'Launch broadcast campaigns',
-  'webhooks:manage': 'Register and manage outbound event webhooks',
+/**
+ * Message-catalogue keys for the human-readable descriptions surfaced
+ * in the key-creation UI. The copy itself lives under
+ * `Settings.apiKeys.scopes.*`; the render site resolves it with
+ * `useTranslations('Settings.apiKeys.scopes')`.
+ *
+ * The scope *ids* on the left are wire values (stored in the DB,
+ * accepted over the API) and are never translated. The keys on the
+ * right are catalogue leaves, so they must stay `.`-free identifiers —
+ * a literal `messages:send` would work, but keeping them plain makes
+ * the catalogue readable and safe to nest.
+ */
+export const SCOPE_DESCRIPTION_KEYS: Record<ApiScope, string> = {
+  'messages:send': 'messagesSend',
+  'messages:read': 'messagesRead',
+  'contacts:read': 'contactsRead',
+  'contacts:write': 'contactsWrite',
+  'conversations:read': 'conversationsRead',
+  'broadcasts:send': 'broadcastsSend',
+  'webhooks:manage': 'webhooksManage',
 };
 
 /** Type-narrow an unknown value into a valid `ApiScope`. */

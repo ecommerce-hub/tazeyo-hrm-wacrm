@@ -50,10 +50,17 @@ export function AccountAccessAlert() {
       <AlertDescription>
         {accountStatus === "unlinked" ? t("unlinkedBody") : t("errorBody")}
         {accountStatusDetail ? (
-          // The raw reason, so a self-hoster reading a bug report has
-          // something to act on instead of just "it's broken".
+          // The underlying reason, so a self-hoster reading a bug report
+          // has something to act on instead of just "it's broken". Our
+          // own checks arrive as a code (translated here); a message
+          // straight from Supabase is shown verbatim.
           <span className="mt-1 block font-mono text-xs opacity-70">
-            {accountStatusDetail}
+            {accountStatusDetail.kind === "code"
+              ? t(
+                  `errors.${accountStatusDetail.code}`,
+                  accountStatusDetail.params,
+                )
+              : accountStatusDetail.message}
           </span>
         ) : null}
       </AlertDescription>

@@ -3,7 +3,7 @@
 import { Check, Moon, Palette, SunMoon, Sun } from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
-import { MODES, THEMES, type Mode, type ThemeId } from "@/lib/themes";
+import { MODES, THEMES, type Mode } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { SettingsPanelHead } from "./settings-panel-head";
@@ -23,6 +23,7 @@ import { SettingsPanelHead } from "./settings-panel-head";
 export function AppearancePanel() {
   const { theme, setTheme, mode, setMode } = useTheme();
   const t = useTranslations("Settings.appearance");
+  const tA11y = useTranslations("Common.a11y");
 
   return (
     <section className="max-w-3xl animate-in fade-in-50 duration-200">
@@ -39,7 +40,7 @@ export function AppearancePanel() {
 
         <div
           role="radiogroup"
-          aria-label="Color mode"
+          aria-label={tA11y("colorMode")}
           className="grid max-w-md grid-cols-2 gap-3"
         >
           {MODES.map((m) => (
@@ -63,7 +64,6 @@ export function AppearancePanel() {
           {THEMES.map((tObj) => (
             <ThemeCard
               key={tObj.id}
-              id={tObj.id}
               name={tObj.name}
               tagline={tObj.tagline}
               swatch={tObj.swatch}
@@ -89,13 +89,17 @@ function ModeCard({
   const t = useTranslations("Settings.appearance");
   const isLight = mode === "light";
   const Icon = isLight ? Sun : Moon;
+  // Localised mode name — the card used to print the raw "light" /
+  // "dark" id, which reads as an untranslated string on a non-English
+  // locale (and `capitalize` only papered over it in English).
+  const modeLabel = t(isLight ? "modeLight" : "modeDark");
   return (
     <button
       type="button"
       role="radio"
       onClick={onPick}
       aria-checked={isActive}
-      aria-label={t("useMode", { mode })}
+      aria-label={t("useMode", { mode: modeLabel })}
       className={cn(
         "flex items-center gap-3 rounded-lg border bg-card p-4 text-left transition-colors",
         isActive
@@ -109,8 +113,8 @@ function ModeCard({
       >
         <Icon className="h-4 w-4" />
       </span>
-      <span className="flex-1 text-sm font-semibold capitalize text-foreground">
-        {mode}
+      <span className="flex-1 text-sm font-semibold text-foreground">
+        {modeLabel}
       </span>
       {isActive && (
         <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
@@ -123,14 +127,12 @@ function ModeCard({
 }
 
 function ThemeCard({
-  id,
   name,
   tagline,
   swatch,
   isActive,
   onPick,
 }: {
-  id: ThemeId;
   name: string;
   tagline: string;
   swatch: string;
@@ -182,7 +184,13 @@ function ThemeCard({
         <span className="w-3 bg-muted" />
         <span className="w-3 bg-card" />
       </div>
-      <span className="sr-only">Theme id: {id}</span>
+      {/* The `sr-only` "Theme id: <id>" span that used to sit here is
+          gone rather than translated: the button already carries
+          aria-label={t("useTheme", { name })} with the human theme
+          name, so the span only added the raw internal id ("cobalt",
+          "tazeyo") to what AT announces — a technical identifier that
+          is meaningless to a screen-reader user and untranslatable by
+          definition. Nothing else referenced it. */}
     </button>
   );
 }

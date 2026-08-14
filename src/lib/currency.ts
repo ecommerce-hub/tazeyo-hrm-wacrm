@@ -16,34 +16,118 @@ export const DEFAULT_CURRENCY = "USD";
 export interface CurrencyOption {
   /** ISO-4217 code, e.g. "USD". Stored verbatim in the DB. */
   code: string;
-  /** Human label for the dropdown, e.g. "US Dollar". */
+  /**
+   * Localised name for the dropdown — "US Dollar" in English,
+   * "ABD doları" in Turkish. Derived, never hand-written: see
+   * {@link currencyLabel}.
+   */
   label: string;
   /** Symbol for compact display, e.g. "$". */
   symbol: string;
 }
 
 /**
- * The currencies offered in pickers. Codes must be valid ISO-4217 so
- * `Intl.NumberFormat` renders the right symbol/grouping. Extend this
- * list to offer more — nothing else needs to change.
+ * The currencies offered in pickers, with their compact symbol and the
+ * English name used only as a fallback (see {@link currencyLabel}).
+ *
+ * Codes must be valid ISO-4217 so `Intl.NumberFormat` renders the right
+ * symbol/grouping. Extend this list to offer more — nothing else needs
+ * to change, and no translation work is required for a new entry.
  */
-export const CURRENCIES: CurrencyOption[] = [
-  { code: "USD", label: "US Dollar", symbol: "$" },
-  { code: "EUR", label: "Euro", symbol: "€" },
-  { code: "GBP", label: "British Pound", symbol: "£" },
-  { code: "INR", label: "Indian Rupee", symbol: "₹" },
-  { code: "AUD", label: "Australian Dollar", symbol: "A$" },
-  { code: "CAD", label: "Canadian Dollar", symbol: "C$" },
-  { code: "BRL", label: "Brazilian Real", symbol: "R$" },
-  { code: "JPY", label: "Japanese Yen", symbol: "¥" },
-  { code: "CNY", label: "Chinese Yuan", symbol: "¥" },
-  { code: "AED", label: "UAE Dirham", symbol: "د.إ" },
-  { code: "ZAR", label: "South African Rand", symbol: "R" },
-  { code: "NGN", label: "Nigerian Naira", symbol: "₦" },
-  { code: "SGD", label: "Singapore Dollar", symbol: "S$" },
-  { code: "MXN", label: "Mexican Peso", symbol: "$" },
-  { code: "COP", label: "Colombian Peso", symbol: "$" },
+const CURRENCY_SEED: ReadonlyArray<{
+  code: string;
+  symbol: string;
+  /** English name, used only when `Intl.DisplayNames` can't answer. */
+  fallbackLabel: string;
+}> = [
+  // Turkish Lira leads the list: this instance is deployed for a
+  // Turkish operator, so it's the code most accounts will pick. The
+  // *fallback* is still USD (DEFAULT_CURRENCY above) because the
+  // `accounts.default_currency` column defaults to 'USD' at the DB
+  // level (migration 021) — changing only the TS constant would put
+  // the two out of step. Set the account currency in Settings → Deals.
+  { code: "TRY", symbol: "₺", fallbackLabel: "Turkish Lira" },
+  { code: "USD", symbol: "$", fallbackLabel: "US Dollar" },
+  { code: "EUR", symbol: "€", fallbackLabel: "Euro" },
+  { code: "GBP", symbol: "£", fallbackLabel: "British Pound" },
+  { code: "INR", symbol: "₹", fallbackLabel: "Indian Rupee" },
+  { code: "AUD", symbol: "A$", fallbackLabel: "Australian Dollar" },
+  { code: "CAD", symbol: "C$", fallbackLabel: "Canadian Dollar" },
+  { code: "BRL", symbol: "R$", fallbackLabel: "Brazilian Real" },
+  { code: "JPY", symbol: "¥", fallbackLabel: "Japanese Yen" },
+  { code: "CNY", symbol: "¥", fallbackLabel: "Chinese Yuan" },
+  { code: "AED", symbol: "د.إ", fallbackLabel: "UAE Dirham" },
+  { code: "ZAR", symbol: "R", fallbackLabel: "South African Rand" },
+  { code: "NGN", symbol: "₦", fallbackLabel: "Nigerian Naira" },
+  { code: "SGD", symbol: "S$", fallbackLabel: "Singapore Dollar" },
+  { code: "MXN", symbol: "$", fallbackLabel: "Mexican Peso" },
+  { code: "COP", symbol: "$", fallbackLabel: "Colombian Peso" },
 ];
+
+/**
+ * BCP-47 tag for the app locale.
+ *
+ * These names are *not* in the message catalogue on purpose: the ICU
+ * data shipped with every runtime already knows the name of every
+ * ISO-4217 code in every locale, so a hand-maintained catalogue of 16
+ * currency names would be 48 strings to keep in sync (en/ko/tr) and
+ * would go stale the moment someone adds a code to the seed above.
+ *
+ * The app locale is a build-time constant (NEXT_PUBLIC_APP_LOCALE, see
+ * src/i18n/request.ts), so it is safe to read here in a plain module
+ * that has no access to the next-intl context — and it resolves to the
+ * same value on the server and in the client bundle, so there is no
+ * hydration mismatch. Mirrors the tag table in src/lib/i18n/date.ts,
+ * which can't be imported here because it is a "use client" module.
+ */
+const INTL_TAGS: Record<string, string> = {
+  en: "en-US",
+  ko: "ko-KR",
+  tr: "tr-TR",
+};
+
+function appLocaleTag(): string {
+  const locale = process.env.NEXT_PUBLIC_APP_LOCALE || "tr";
+  return INTL_TAGS[locale] ?? locale;
+}
+
+/**
+ * Localised display name for an ISO-4217 code, e.g. "US Dollar" /
+ * "ABD doları" / "미국 달러".
+ *
+ * Falls back to the hard-coded English name (then to the bare code) if
+ * `Intl.DisplayNames` is missing or has no ICU data for the locale —
+ * a `small-icu` Node build and very old browsers both land there.
+ * `DisplayNames.of()` echoes the input back for a code it doesn't
+ * know, which we treat as "no answer" rather than a label.
+ */
+export function currencyLabel(
+  code: string,
+  locale: string = appLocaleTag(),
+): string {
+  const fallback =
+    CURRENCY_SEED.find((c) => c.code === code)?.fallbackLabel ?? code;
+  try {
+    const name = new Intl.DisplayNames([locale, "en"], {
+      type: "currency",
+    }).of(code);
+    if (name && name !== code) return name;
+  } catch {
+    // No Intl.DisplayNames, or an unusable locale tag — use the fallback.
+  }
+  return fallback;
+}
+
+/**
+ * The currencies offered in pickers, labelled in the app locale.
+ * Built once at module load: the locale is a build-time constant, so
+ * there is nothing to recompute per render.
+ */
+export const CURRENCIES: CurrencyOption[] = CURRENCY_SEED.map((c) => ({
+  code: c.code,
+  label: currencyLabel(c.code),
+  symbol: c.symbol,
+}));
 
 /**
  * Format a deal value as a currency string. Whole-number output

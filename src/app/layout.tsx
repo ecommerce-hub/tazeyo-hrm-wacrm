@@ -22,10 +22,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "wacrm",
-    template: "%s — wacrm",
+    default: "Tazeyo HR CRM",
+    template: "%s — Tazeyo HR CRM",
   },
-  description: "Self-hostable CRM template for WhatsApp.",
+  description:
+    "Tazeyo HR CRM — WhatsApp üzerinden ortak gelen kutusu, kişiler, satış hatları, toplu gönderimler ve otomasyonlar.",
   robots: {
     index: false,
     follow: false,
@@ -41,8 +42,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
-  colorScheme: "dark light",
+  // Alabaster — the Tazeyo light canvas, which is the default mode.
+  // This paints the mobile browser chrome, so it has to track
+  // DEFAULT_MODE rather than the old dark-first value.
+  themeColor: "#F7F4E9",
+  colorScheme: "light dark",
 };
 
 // Inline boot script — runs before React hydrates so the user's

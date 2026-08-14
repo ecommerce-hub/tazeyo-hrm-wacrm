@@ -21,8 +21,19 @@ export interface TemplateStepSeed {
 
 export interface AutomationTemplateDefinition {
   slug: TemplateSlug
+  /**
+   * Canonical English name. This is what gets persisted as the
+   * automation's `name` when a template is instantiated (including from
+   * `src/app/api/automations/route.ts`, where no translator exists), so
+   * it must stay stable — render `nameKey` in the gallery instead.
+   */
   name: string
+  /** Canonical English description; persisted like `name` above. */
   description: string
+  /** Message key under `Automations.templates` for the gallery card title. */
+  nameKey: string
+  /** Message key under `Automations.templates` for the gallery card body. */
+  descriptionKey: string
   trigger_type: AutomationTriggerType
   trigger_config: AutomationTriggerConfig
   steps: TemplateStepSeed[]
@@ -33,6 +44,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
     slug: 'welcome_message',
     name: 'Welcome Message',
     description: 'Auto-reply to first-time contacts with a greeting.',
+    nameKey: 'welcome_message.name',
+    descriptionKey: 'welcome_message.description',
     // first_inbound_message (added in PR #33) catches both brand-new
     // contacts AND manually-added/imported contacts on their first-ever
     // reply, which is what a user setting up a "welcome" automation
@@ -57,6 +70,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
     slug: 'out_of_office',
     name: 'Out of Office',
     description: 'Auto-reply during off-hours so nobody is left waiting.',
+    nameKey: 'out_of_office.name',
+    descriptionKey: 'out_of_office.description',
     trigger_type: 'new_message_received',
     trigger_config: {},
     steps: [
@@ -82,6 +97,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
     slug: 'lead_qualifier',
     name: 'Lead Qualifier',
     description: 'Ask qualification questions to filter inbound leads.',
+    nameKey: 'lead_qualifier.name',
+    descriptionKey: 'lead_qualifier.description',
     trigger_type: 'keyword_match',
     trigger_config: {
       keywords: ['pricing', 'quote', 'buy'],
@@ -109,6 +126,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
     slug: 'follow_up_reminder',
     name: 'Follow-up Reminder',
     description: 'Send a nudge if a contact has not replied within 24 hours.',
+    nameKey: 'follow_up_reminder.name',
+    descriptionKey: 'follow_up_reminder.description',
     trigger_type: 'new_message_received',
     trigger_config: {},
     steps: [
@@ -129,4 +148,17 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
 
 export function getTemplate(slug: string): AutomationTemplateDefinition | null {
   return AUTOMATION_TEMPLATES[slug as TemplateSlug] ?? null
+}
+
+/**
+ * Localised gallery-card copy for a template.
+ *
+ * @param t Translator scoped to `Automations.templates`.
+ */
+export function templateCard(
+  slug: TemplateSlug,
+  t: (key: string) => string,
+): { name: string; description: string } {
+  const def = AUTOMATION_TEMPLATES[slug]
+  return { name: t(def.nameKey), description: t(def.descriptionKey) }
 }

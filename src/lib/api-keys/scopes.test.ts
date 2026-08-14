@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   API_SCOPES,
-  SCOPE_DESCRIPTIONS,
+  SCOPE_DESCRIPTION_KEYS,
   hasScope,
   isApiScope,
   normalizeScopes,
@@ -54,10 +54,19 @@ describe('hasScope', () => {
   });
 });
 
-describe('SCOPE_DESCRIPTIONS', () => {
-  it('has a description for every scope', () => {
+describe('SCOPE_DESCRIPTION_KEYS', () => {
+  // Descriptions moved into the message catalogue
+  // (Settings.apiKeys.scopes.*), so this asserts the key mapping rather
+  // than the English sentence it used to hold.
+  it('has a catalogue key for every scope', () => {
     for (const s of API_SCOPES) {
-      expect(SCOPE_DESCRIPTIONS[s]).toBeTruthy();
+      expect(SCOPE_DESCRIPTION_KEYS[s]).toBeTruthy();
+    }
+  });
+
+  it('maps to plain leaf keys, not dotted paths or wire ids', () => {
+    for (const s of API_SCOPES) {
+      expect(SCOPE_DESCRIPTION_KEYS[s]).toMatch(/^[A-Za-z][A-Za-z0-9]*$/);
     }
   });
 });

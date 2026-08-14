@@ -264,7 +264,10 @@ export function TemplatePicker({
             {slots && slots.headerVarCount > 0 && (
               <div className="space-y-1">
                 <Label className="text-xs text-popover-foreground">
-                  {`Header {{1}}`}
+                  {/* The `{{1}}` is literal WhatsApp placeholder syntax the
+                      user must recognise, so it is passed in as a value —
+                      keeping the catalogue string a valid ICU message. */}
+                  {t("slots.header", { slot: "{{1}}" })}
                 </Label>
                 <Input
                   value={headerText}
@@ -276,7 +279,9 @@ export function TemplatePicker({
             )}
             {slots?.bodyVars.map((v, i) => (
               <div key={v} className="space-y-1">
-                <Label className="text-xs text-popover-foreground">{`Body {{${v}}}`}</Label>
+                <Label className="text-xs text-popover-foreground">
+                  {t("slots.body", { slot: `{{${v}}}` })}
+                </Label>
                 <Input
                   value={params[i] ?? ""}
                   onChange={(e) => {
@@ -292,7 +297,7 @@ export function TemplatePicker({
             {slots?.urlButtonSlots.map((slot) => (
               <div key={slot.index} className="space-y-1">
                 <Label className="text-xs text-popover-foreground">
-                  {`URL button "${slot.text}" — value for `}{`{{1}}`}
+                  {t("slots.urlButton", { text: slot.text, slot: "{{1}}" })}
                 </Label>
                 <Input
                   value={buttonParams[slot.index] ?? ""}

@@ -63,6 +63,29 @@ const SECURITY_HEADERS = [
   },
 ] as const;
 
+/**
+ * Route prefixes that must never be stored by a shared cache.
+ *
+ * Keep in sync with `protectedPaths` in src/middleware.ts. `join` is
+ * included even though it is not auth-gated: it renders per-token
+ * invitation state, which is just as wrong to share between visitors.
+ */
+const PRIVATE_ROUTE_PREFIXES = [
+  "dashboard",
+  "inbox",
+  "contacts",
+  "pipelines",
+  "broadcasts",
+  "automations",
+  "flows",
+  "agents",
+  "notifications",
+  "settings",
+  "join",
+] as const;
+
+const PRIVATE_ROUTES = PRIVATE_ROUTE_PREFIXES.join("|");
+
 const nextConfig: NextConfig = {
   // Emit a self-contained server bundle (.next/standalone) so the
   // Docker image can run without node_modules or the Next CLI.
@@ -122,12 +145,13 @@ const nextConfig: NextConfig = {
    *     chunk-hash drift self-heals within ~5 min with no user-
    *     visible latency.
    *
-   *   Note: dynamic dashboard routes (/inbox, /contacts, /pipelines,
-   *   /broadcasts, etc.) are server-rendered per request — Next.js
-   *   and Supabase auth already prevent them from being served
-   *   from a shared cache. The s-maxage here is a ceiling; Next.js
-   *   and auth middleware still set `private` / `no-store` for
-   *   per-user responses.
+   *   Note: per-user routes (/dashboard, /inbox, /contacts, …) are
+   *   NOT covered by the catch-all — they get an explicit
+   *   `private, no-store` rule of their own, listed first. Do not
+   *   assume "it is server-rendered, so it will not be cached":
+   *   an explicit `public, s-maxage` header overrides whatever
+   *   Next.js would have chosen, and it is applied to middleware
+   *   redirects as well as rendered pages.
    *
    * Security headers are appended via a separate catch-all rule
    * below — Next.js merges headers from every matching rule, so
@@ -141,7 +165,48 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
       {
-        source: "/:path((?!_next/static|_next/image|api).*)",
+        // Per-user routes: never storable by a shared cache.
+        //
+        // This rule exists because the catch-all below used to swallow
+        // them, and that broke production sign-in outright. Next applies
+        // the header config to *middleware* responses too, so the 307
+        // middleware issues for an unauthenticated visit to /dashboard
+        // was going out as:
+        //   307  Location: /login
+        //   Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
+        // with no Vary on the auth cookie. That explicitly authorises a
+        // CDN (CloudFront, on Amplify) to store the redirect under the
+        // key "/dashboard" and replay it to everyone for 5 minutes —
+        // 24 hours once stale-while-revalidate is counted.
+        //
+        // So one logged-out hit on /dashboard poisons the edge, and
+        // every signed-in user afterwards is bounced back to /login
+        // without the request ever reaching the origin. Sign-in itself
+        // still "works" — the Supabase token call goes straight to
+        // supabase.co and never touches the CDN — which is what makes
+        // it look like a session bug rather than a caching one. Locally
+        // it is invisible: no shared cache, and browsers obey max-age=0.
+        source: `/:path(${PRIVATE_ROUTES})/:rest*`,
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+          // Only meaningful for proxies that honour Vary and ignore
+          // no-store. On rendered pages Next overwrites this with its
+          // own `Vary: rsc, ...`; no-store is the load-bearing part.
+          { key: "Vary", value: "Cookie" },
+        ],
+      },
+      {
+        // Public, non-personalised routes only — the landing redirect,
+        // /login, /signup, /forgot-password. Short shared-cache TTL so
+        // a deploy's chunk-hash drift self-heals within ~5 min.
+        //
+        // The private prefixes are excluded here as well as being given
+        // their own rule above. Next resolves duplicate header keys as
+        // "last matching rule wins", so relying on rule order alone
+        // would leave this a one-line reordering away from silently
+        // reintroducing the redirect-caching bug. Excluding them makes
+        // the two rules disjoint and the outcome order-independent.
+        source: `/:path((?!_next/static|_next/image|api|${PRIVATE_ROUTES}).*)`,
         headers: [
           {
             key: "Cache-Control",

@@ -64,13 +64,29 @@ const SECURITY_HEADERS = [
 ] as const;
 
 /**
- * Route prefixes that must never be stored by a shared cache.
+ * Route prefixes whose response depends on the caller's auth cookie,
+ * and which therefore must never be stored by a shared cache.
  *
- * Keep in sync with `protectedPaths` in src/middleware.ts. `join` is
- * included even though it is not auth-gated: it renders per-token
- * invitation state, which is just as wrong to share between visitors.
+ * The test for membership here is NOT "is this page behind a login" —
+ * it is "can two visitors get different bytes for this URL". Middleware
+ * makes that true in both directions:
+ *
+ *   - signed OUT + a protected path  -> 307 /login
+ *   - signed IN  + an auth page      -> 307 /dashboard
+ *
+ * Both groups have to be listed. Leaving either one in the shared-cache
+ * bucket lets a CDN pin one visitor's redirect to the URL and replay it
+ * to everyone, which produces a sign-in bounce (protected side) or a
+ * /login <-> /dashboard redirect loop, i.e. ERR_TOO_MANY_REDIRECTS
+ * (auth-page side, once the protected side is fixed).
+ *
+ * Keep the first group in sync with `protectedPaths` and the second
+ * with the auth-page branch, both in src/middleware.ts. `join` is here
+ * too — not auth-gated, but it renders per-token invitation state,
+ * which is just as wrong to share between visitors.
  */
-const PRIVATE_ROUTE_PREFIXES = [
+const AUTH_DEPENDENT_PREFIXES = [
+  // Protected — middleware bounces signed-out visitors to /login.
   "dashboard",
   "inbox",
   "contacts",
@@ -81,10 +97,16 @@ const PRIVATE_ROUTE_PREFIXES = [
   "agents",
   "notifications",
   "settings",
+  // Per-token, not per-user, but equally unshareable.
   "join",
+  // Auth pages — middleware bounces signed-IN visitors to /dashboard
+  // (or to /join/<token> when an invite is in the query string).
+  "login",
+  "signup",
+  "forgot-password",
 ] as const;
 
-const PRIVATE_ROUTES = PRIVATE_ROUTE_PREFIXES.join("|");
+const AUTH_DEPENDENT_ROUTES = AUTH_DEPENDENT_PREFIXES.join("|");
 
 const nextConfig: NextConfig = {
   // Emit a self-contained server bundle (.next/standalone) so the
@@ -165,7 +187,7 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
       {
-        // Per-user routes: never storable by a shared cache.
+        // Auth-dependent routes: never storable by a shared cache.
         //
         // This rule exists because the catch-all below used to swallow
         // them, and that broke production sign-in outright. Next applies
@@ -186,7 +208,7 @@ const nextConfig: NextConfig = {
         // supabase.co and never touches the CDN — which is what makes
         // it look like a session bug rather than a caching one. Locally
         // it is invisible: no shared cache, and browsers obey max-age=0.
-        source: `/:path(${PRIVATE_ROUTES})/:rest*`,
+        source: `/:path(${AUTH_DEPENDENT_ROUTES})/:rest*`,
         headers: [
           { key: "Cache-Control", value: "private, no-store" },
           // Only meaningful for proxies that honour Vary and ignore
@@ -196,9 +218,10 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Public, non-personalised routes only — the landing redirect,
-        // /login, /signup, /forgot-password. Short shared-cache TTL so
-        // a deploy's chunk-hash drift self-heals within ~5 min.
+        // Genuinely public, identical-for-everyone routes — the `/`
+        // landing redirect and any future marketing page. Short
+        // shared-cache TTL so a deploy's chunk-hash drift self-heals
+        // within ~5 min, which is what this rule was added for.
         //
         // The private prefixes are excluded here as well as being given
         // their own rule above. Next resolves duplicate header keys as
@@ -206,7 +229,7 @@ const nextConfig: NextConfig = {
         // would leave this a one-line reordering away from silently
         // reintroducing the redirect-caching bug. Excluding them makes
         // the two rules disjoint and the outcome order-independent.
-        source: `/:path((?!_next/static|_next/image|api|${PRIVATE_ROUTES}).*)`,
+        source: `/:path((?!_next/static|_next/image|api|${AUTH_DEPENDENT_ROUTES}).*)`,
         headers: [
           {
             key: "Cache-Control",

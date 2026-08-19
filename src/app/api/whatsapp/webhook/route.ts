@@ -764,6 +764,15 @@ async function processMessage(
   // SQL — see the helper for why that matters.
   await reopenClosedConversation(supabaseAdmin(), conversation)
 
+  // Unarchive on inbound — an archived conversation receiving a new
+  // customer message should surface back in the inbox automatically.
+  if (conversation.is_archived) {
+    await supabaseAdmin()
+      .from('conversations')
+      .update({ is_archived: false })
+      .eq('id', conversation.id)
+  }
+
   // If this contact was a recent broadcast recipient, flag the reply
   // so the broadcast's `replied_count` advances (via the aggregate
   // trigger installed in migration 003).

@@ -21,6 +21,25 @@ import { cn } from "@/lib/utils";
 // across reloads and sessions (device-scoped, like the theme prefs).
 const CONTACT_PANEL_STORAGE_KEY = "wacrm:inbox:contact-panel-open";
 
+// Lazily-created Audio element for new-message notifications. Shared
+// across renders so we don't create a new element per event.
+let notificationAudio: HTMLAudioElement | null = null;
+function playNotificationSound() {
+  try {
+    if (!notificationAudio) {
+      notificationAudio = new Audio("/notification.wav");
+      notificationAudio.volume = 0.5;
+    }
+    // Reset in case a previous play is still in progress
+    notificationAudio.currentTime = 0;
+    notificationAudio.play().catch(() => {
+      // Browser may block autoplay until user interaction — swallow.
+    });
+  } catch {
+    // Audio not supported or file missing — non-fatal.
+  }
+}
+
 // `useSearchParams` (the `?c=<id>` deep link below) requires a Suspense
 // boundary or the production build bails to CSR and errors out. Thin
 // wrapper supplies it; the inner component holds all the inbox state.
@@ -218,6 +237,11 @@ function InboxPageInner() {
       const newMsg = event.new;
 
       if (event.eventType === "INSERT") {
+        // Play notification sound for inbound (customer) messages
+        if (newMsg.sender_type === "customer") {
+          playNotificationSound();
+        }
+
         // Add to messages if it belongs to active conversation
         if (
           activeConversation &&
@@ -240,21 +264,30 @@ function InboxPageInner() {
         // knownConvIdsRef for why a closure flag inside the updater would
         // always read false here.
         if (knownConvIdsRef.current.has(newMsg.conversation_id)) {
-          setConversations((prev) =>
-            prev.map((c) =>
+          setConversations((prev) => {
+            const updated = prev.map((c) =>
               c.id === newMsg.conversation_id
                 ? {
                     ...c,
                     last_message_text: newMsg.content_text ?? "",
                     last_message_at: newMsg.created_at,
+                    // Auto-unarchive when a new message arrives
+                    is_archived: false,
                     unread_count:
                       activeConversation?.id === newMsg.conversation_id
                         ? 0
                         : c.unread_count + 1,
                   }
                 : c,
-            ),
-          );
+            );
+            // Re-sort so the conversation with the newest message
+            // floats to the top of the list.
+            return updated.sort((a, b) => {
+              const ta = a.last_message_at ?? a.created_at;
+              const tb = b.last_message_at ?? b.created_at;
+              return tb.localeCompare(ta);
+            });
+          });
         } else {
           // First time we're seeing this conv: the conv-INSERT event
           // hasn't landed yet, or was missed. Hydrate from the DB so
@@ -534,6 +567,22 @@ function InboxPageInner() {
     [activeConversation]
   );
 
+  const handleArchive = useCallback(
+    (conversationId: string, archived: boolean) => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conversationId ? { ...c, is_archived: archived } : c
+        )
+      );
+      if (activeConversation?.id === conversationId) {
+        setActiveConversation((prev) =>
+          prev ? { ...prev, is_archived: archived } : prev
+        );
+      }
+    },
+    [activeConversation]
+  );
+
   const handleAssignChange = useCallback(
     (conversationId: string, assignedAgentId: string | null) => {
       setConversations((prev) =>
@@ -623,6 +672,7 @@ function InboxPageInner() {
             onRefresh={handleManualRefresh}
             contactPanelOpen={contactPanelOpen}
             onToggleContactPanel={handleToggleContactPanel}
+            onArchive={handleArchive}
           />
         </div>
 

@@ -181,6 +181,7 @@ export interface Conversation {
   ai_autoreply_disabled?: boolean;
   ai_reply_count?: number;
   ai_handoff_summary?: string | null;
+  is_archived?: boolean;
 }
 
 // ============================================================

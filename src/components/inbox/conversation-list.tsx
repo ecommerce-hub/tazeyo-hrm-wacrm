@@ -45,7 +45,7 @@ const STATUS_COLORS: Record<ConversationStatus, string> = {
 
 
 
-type InboxFilter = ConversationStatus | "all" | "unread";
+type InboxFilter = ConversationStatus | "all" | "unread" | "archived";
 
 export function ConversationList({
   activeConversationId,
@@ -62,6 +62,7 @@ export function ConversationList({
     { label: t("filterOpen"), value: "open" },
     { label: t("filterPending"), value: "pending" },
     { label: t("filterClosed"), value: "closed" },
+    { label: t("filterArchived"), value: "archived" },
   ], [t]);
 
   const [search, setSearch] = useState("");
@@ -162,10 +163,16 @@ export function ConversationList({
   const filtered = useMemo(() => {
     let result = conversations;
 
-    if (filter === "unread") {
-      result = result.filter((c) => c.unread_count > 0);
-    } else if (filter !== "all") {
-      result = result.filter((c) => c.status === filter);
+    if (filter === "archived") {
+      result = result.filter((c) => c.is_archived);
+    } else {
+      // Hide archived from all other views
+      result = result.filter((c) => !c.is_archived);
+      if (filter === "unread") {
+        result = result.filter((c) => c.unread_count > 0);
+      } else if (filter !== "all") {
+        result = result.filter((c) => c.status === filter);
+      }
     }
 
     // Contact-based filters (tags via OR logic, exact company match).

@@ -93,6 +93,12 @@ vi.mock("./meta-send", () => ({
   engineSendInteractiveList: vi.fn(async () => ({
     whatsapp_message_id: "wamid.4",
   })),
+  resolveSendContext: vi.fn(async () => ({
+    contactId: "ct-1",
+    contactPhone: "905551234567",
+    phoneNumberId: "pn-1",
+    accessToken: "tok-1",
+  })),
 }));
 
 import { dispatchInboundToFlows, entryTriggerTexts } from "./engine";

@@ -32,6 +32,49 @@ import { supabaseAdmin } from './admin-client'
 // keeps the foundation PR self-contained and unit-testable.
 // ------------------------------------------------------------
 
+// Pre-resolved account context for a flow run. Resolved once at the
+// start of a dispatch so the per-node senders skip redundant queries.
+export interface ResolvedSendContext {
+  contactId: string
+  contactPhone: string
+  phoneNumberId: string
+  accessToken: string
+}
+
+export async function resolveSendContext(
+  accountId: string,
+  contactId: string,
+): Promise<ResolvedSendContext> {
+  const db = supabaseAdmin()
+  const { data: contact, error: contactErr } = await db
+    .from('contacts')
+    .select('id, phone')
+    .eq('id', contactId)
+    .eq('account_id', accountId)
+    .maybeSingle()
+  if (contactErr || !contact?.phone) {
+    throw new Error('contact not found for this account')
+  }
+  const sanitized = sanitizePhoneForMeta(contact.phone)
+  if (!isValidE164(sanitized)) {
+    throw new Error(`contact phone invalid: ${contact.phone}`)
+  }
+  const { data: config, error: configErr } = await db
+    .from('whatsapp_config')
+    .select('*')
+    .eq('account_id', accountId)
+    .single()
+  if (configErr || !config) {
+    throw new Error('WhatsApp not configured for this account')
+  }
+  return {
+    contactId: contact.id,
+    contactPhone: sanitized,
+    phoneNumberId: config.phone_number_id,
+    accessToken: decrypt(config.access_token),
+  }
+}
+
 interface SendTextEngineArgs {
   /** Account-level tenancy key. Drives contact + whatsapp_config
    *  lookups so a flow authored by user A still sends through the
@@ -48,6 +91,7 @@ interface SendTextEngineArgs {
    *  badges it as an AI reply. Only the auto-reply bot sets this;
    *  deterministic Flow/automation sends leave it false. */
   aiGenerated?: boolean
+  resolved?: ResolvedSendContext
 }
 
 /**
@@ -66,45 +110,20 @@ export async function engineSendText(
   args: SendTextEngineArgs,
 ): Promise<{ whatsapp_message_id: string }> {
   const db = supabaseAdmin()
-
-  const { data: contact, error: contactErr } = await db
-    .from('contacts')
-    .select('id, phone')
-    .eq('id', args.contactId)
-    .eq('account_id', args.accountId)
-    .maybeSingle()
-  if (contactErr || !contact?.phone) {
-    throw new Error('contact not found for this account')
-  }
-
-  const sanitized = sanitizePhoneForMeta(contact.phone)
-  if (!isValidE164(sanitized)) {
-    throw new Error(`contact phone invalid: ${contact.phone}`)
-  }
-
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', args.accountId)
-    .single()
-  if (configErr || !config) {
-    throw new Error('WhatsApp not configured for this account')
-  }
-
-  const accessToken = decrypt(config.access_token)
+  const ctx = args.resolved ?? await resolveSendContext(args.accountId, args.contactId)
 
   const attempt = async (phone: string): Promise<string> => {
     const r = await sendTextMessage({
-      phoneNumberId: config.phone_number_id,
-      accessToken,
+      phoneNumberId: ctx.phoneNumberId,
+      accessToken: ctx.accessToken,
       to: phone,
       text: args.text,
     })
     return r.messageId
   }
 
-  const variants = phoneVariants(sanitized)
-  let workingPhone = sanitized
+  const variants = phoneVariants(ctx.contactPhone)
+  let workingPhone = ctx.contactPhone
   let waMessageId = ''
   let lastError: unknown = null
   for (const v of variants) {
@@ -121,8 +140,9 @@ export async function engineSendText(
   }
   if (lastError) throw lastError
 
-  if (workingPhone !== sanitized) {
-    await db.from('contacts').update({ phone: workingPhone }).eq('id', contact.id)
+  if (workingPhone !== ctx.contactPhone) {
+    await db.from('contacts').update({ phone: workingPhone }).eq('id', ctx.contactId)
+    ctx.contactPhone = workingPhone
   }
 
   const { error: msgErr } = await db.from('messages').insert({
@@ -161,6 +181,7 @@ interface SendMediaEngineArgs {
   caption?: string
   /** Document-only; ignored by Meta for image/video. */
   filename?: string
+  resolved?: ResolvedSendContext
 }
 
 /**
@@ -176,37 +197,12 @@ export async function engineSendMedia(
   args: SendMediaEngineArgs,
 ): Promise<{ whatsapp_message_id: string }> {
   const db = supabaseAdmin()
-
-  const { data: contact, error: contactErr } = await db
-    .from('contacts')
-    .select('id, phone')
-    .eq('id', args.contactId)
-    .eq('account_id', args.accountId)
-    .maybeSingle()
-  if (contactErr || !contact?.phone) {
-    throw new Error('contact not found for this account')
-  }
-
-  const sanitized = sanitizePhoneForMeta(contact.phone)
-  if (!isValidE164(sanitized)) {
-    throw new Error(`contact phone invalid: ${contact.phone}`)
-  }
-
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', args.accountId)
-    .single()
-  if (configErr || !config) {
-    throw new Error('WhatsApp not configured for this account')
-  }
-
-  const accessToken = decrypt(config.access_token)
+  const ctx = args.resolved ?? await resolveSendContext(args.accountId, args.contactId)
 
   const attempt = async (phone: string): Promise<string> => {
     const r = await sendMediaMessage({
-      phoneNumberId: config.phone_number_id,
-      accessToken,
+      phoneNumberId: ctx.phoneNumberId,
+      accessToken: ctx.accessToken,
       to: phone,
       kind: args.kind,
       link: args.link,
@@ -216,8 +212,8 @@ export async function engineSendMedia(
     return r.messageId
   }
 
-  const variants = phoneVariants(sanitized)
-  let workingPhone = sanitized
+  const variants = phoneVariants(ctx.contactPhone)
+  let workingPhone = ctx.contactPhone
   let waMessageId = ''
   let lastError: unknown = null
   for (const v of variants) {
@@ -234,8 +230,9 @@ export async function engineSendMedia(
   }
   if (lastError) throw lastError
 
-  if (workingPhone !== sanitized) {
-    await db.from('contacts').update({ phone: workingPhone }).eq('id', contact.id)
+  if (workingPhone !== ctx.contactPhone) {
+    await db.from('contacts').update({ phone: workingPhone }).eq('id', ctx.contactId)
+    ctx.contactPhone = workingPhone
   }
 
   // content_type='image'|'video'|'document' — these are already in the
@@ -276,6 +273,7 @@ interface SendInteractiveButtonsEngineArgs {
   buttons: InteractiveButton[]
   headerText?: string
   footerText?: string
+  resolved?: ResolvedSendContext
 }
 
 interface SendInteractiveListEngineArgs {
@@ -288,6 +286,7 @@ interface SendInteractiveListEngineArgs {
   sections: InteractiveListSection[]
   headerText?: string
   footerText?: string
+  resolved?: ResolvedSendContext
 }
 
 /**
@@ -325,41 +324,13 @@ async function sendInteractiveViaMeta(
   input: SendInput,
 ): Promise<{ whatsapp_message_id: string }> {
   const db = supabaseAdmin()
-
-  // Scope the contact + whatsapp_config lookups by account_id —
-  // same defense-in-depth rationale as automations/meta-send.ts.
-  // Migration 017 moved both tables to account-scoped tenancy.
-  const { data: contact, error: contactErr } = await db
-    .from('contacts')
-    .select('id, phone')
-    .eq('id', input.contactId)
-    .eq('account_id', input.accountId)
-    .maybeSingle()
-  if (contactErr || !contact?.phone) {
-    throw new Error('contact not found for this account')
-  }
-
-  const sanitized = sanitizePhoneForMeta(contact.phone)
-  if (!isValidE164(sanitized)) {
-    throw new Error(`contact phone invalid: ${contact.phone}`)
-  }
-
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', input.accountId)
-    .single()
-  if (configErr || !config) {
-    throw new Error('WhatsApp not configured for this account')
-  }
-
-  const accessToken = decrypt(config.access_token)
+  const ctx = input.resolved ?? await resolveSendContext(input.accountId, input.contactId)
 
   const attempt = async (phone: string): Promise<string> => {
     if (input.kind === 'buttons') {
       const r = await sendInteractiveButtons({
-        phoneNumberId: config.phone_number_id,
-        accessToken,
+        phoneNumberId: ctx.phoneNumberId,
+        accessToken: ctx.accessToken,
         to: phone,
         bodyText: input.bodyText,
         buttons: input.buttons,
@@ -369,8 +340,8 @@ async function sendInteractiveViaMeta(
       return r.messageId
     }
     const r = await sendInteractiveList({
-      phoneNumberId: config.phone_number_id,
-      accessToken,
+      phoneNumberId: ctx.phoneNumberId,
+      accessToken: ctx.accessToken,
       to: phone,
       bodyText: input.bodyText,
       buttonLabel: input.buttonLabel,
@@ -381,11 +352,8 @@ async function sendInteractiveViaMeta(
     return r.messageId
   }
 
-  // Same phone-variant retry as automations/meta-send.ts. Numbers
-  // registered with/without a trunk 0 + Meta's sandbox quirks all
-  // need this to reliably land a message.
-  const variants = phoneVariants(sanitized)
-  let workingPhone = sanitized
+  const variants = phoneVariants(ctx.contactPhone)
+  let workingPhone = ctx.contactPhone
   let waMessageId = ''
   let lastError: unknown = null
   for (const v of variants) {
@@ -402,8 +370,9 @@ async function sendInteractiveViaMeta(
   }
   if (lastError) throw lastError
 
-  if (workingPhone !== sanitized) {
-    await db.from('contacts').update({ phone: workingPhone }).eq('id', contact.id)
+  if (workingPhone !== ctx.contactPhone) {
+    await db.from('contacts').update({ phone: workingPhone }).eq('id', ctx.contactId)
+    ctx.contactPhone = workingPhone
   }
 
   // Persist the bot's prompt to the messages table so it appears in

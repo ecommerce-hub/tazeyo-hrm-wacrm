@@ -588,7 +588,7 @@ async function processMessage(
   // See parseMessageContent for what it turns off.
   mirrorMedia: boolean
 ) {
-  const senderPhone = normalizePhone(message.from)
+  const senderPhone = normalizePhone(message.from || contact.wa_id)
   const contactName = contact.profile.name
 
   // Find or create contact
@@ -1127,6 +1127,11 @@ async function findOrCreateContact(
   phone: string,
   name: string
 ): Promise<ContactOutcome | null> {
+  if (!phone) {
+    console.error('findOrCreateContact: empty phone, skipping contact creation')
+    return null
+  }
+
   // Find an existing contact for this account by phone. The shared
   // helper pre-filters in SQL by the last-8-digit suffix (so we don't
   // pull every contact on every inbound message) then applies the

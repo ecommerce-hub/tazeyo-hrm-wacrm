@@ -21,8 +21,9 @@ export function normalizeKey(phone: string): string {
 /** Minimal shape we need back from a contacts lookup. */
 export interface ExistingContact {
   id: string;
-  phone: string;
+  phone: string | null;
   name?: string | null;
+  bsuid?: string | null;
   [key: string]: unknown;
 }
 
@@ -53,6 +54,28 @@ export async function findExistingContact(
   return (
     (data as ExistingContact[]).find((c) => phonesMatch(c.phone, phone)) ?? null
   );
+}
+
+/**
+ * Find an existing contact in `accountId` whose BSUID matches `bsuid`,
+ * or null. Direct equality — BSUIDs are opaque, case-sensitive strings.
+ */
+export async function findExistingContactByBsuid(
+  db: SupabaseClient,
+  accountId: string,
+  bsuid: string,
+): Promise<ExistingContact | null> {
+  if (!bsuid) return null;
+
+  const { data, error } = await db
+    .from("contacts")
+    .select("*")
+    .eq("account_id", accountId)
+    .eq("bsuid", bsuid)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as ExistingContact;
 }
 
 /**

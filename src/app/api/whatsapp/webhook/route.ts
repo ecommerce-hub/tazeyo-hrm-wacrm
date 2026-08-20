@@ -377,7 +377,8 @@ async function handleStatusUpdate(status: {
   id: string
   status: string
   timestamp: string
-  recipient_id: string
+  recipient_id?: string
+  recipient_user_id?: string
 }) {
   // 1) Mirror onto messages (legacy behavior) — Meta's status values
   //    already match the CHECK constraint on messages.status. No

@@ -155,7 +155,7 @@ export async function engineSendText(
     ai_generated: args.aiGenerated ?? false,
   })
   if (msgErr) {
-    throw new Error(`sent to Meta but DB insert failed: ${msgErr.message}`)
+    console.error(`[flows] sent to Meta but DB insert failed: ${msgErr.message}`)
   }
 
   await db
@@ -249,7 +249,7 @@ export async function engineSendMedia(
     status: 'sent',
   })
   if (msgErr) {
-    throw new Error(`sent to Meta but DB insert failed: ${msgErr.message}`)
+    console.error(`[flows] sent to Meta but DB insert failed: ${msgErr.message}`)
   }
 
   await db
@@ -414,7 +414,7 @@ async function sendInteractiveViaMeta(
     status: 'sent',
   })
   if (msgErr) {
-    throw new Error(`sent to Meta but DB insert failed: ${msgErr.message}`)
+    console.error(`[flows] sent to Meta but DB insert failed: ${msgErr.message}`)
   }
 
   await db

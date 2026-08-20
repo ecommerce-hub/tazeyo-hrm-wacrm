@@ -52,7 +52,7 @@ export async function findExistingContact(
   if (error || !data) return null;
 
   return (
-    (data as ExistingContact[]).find((c) => phonesMatch(c.phone, phone)) ?? null
+    (data as ExistingContact[]).find((c) => phonesMatch(c.phone ?? '', phone)) ?? null
   );
 }
 
@@ -84,7 +84,7 @@ export async function findExistingContactByBsuid(
  * exact matches but only warns on fuzzy ones.
  */
 export function isExactMatch(existing: ExistingContact, phone: string): boolean {
-  return normalizeKey(existing.phone) === normalizeKey(phone);
+  return normalizeKey(existing.phone ?? '') === normalizeKey(phone);
 }
 
 /**

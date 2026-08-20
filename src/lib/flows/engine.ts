@@ -781,8 +781,16 @@ async function advanceFromNodeKey(
       continue;
     }
     if (node.node_type === "send_buttons") {
-      await sendButtonsAndSuspend(db, run, node, ctx);
-      // Persist the new current_node_key via optimistic UPDATE.
+      try {
+        await sendButtonsAndSuspend(db, run, node, ctx);
+      } catch (err) {
+        await logEvent(db, run.id, "error", node.node_key, {
+          reason: "send_buttons_partial_failure",
+          detail: err instanceof Error ? err.message : String(err),
+        });
+      }
+      // Always persist the new current_node_key — the Meta send may
+      // have succeeded even if the DB persistence threw.
       const advanced = await advanceCurrentNodeKey(
         db,
         run.id,
@@ -797,7 +805,16 @@ async function advanceFromNodeKey(
       return { outcome: "advanced" };
     }
     if (node.node_type === "send_list") {
-      await sendListAndSuspend(db, run, node, ctx);
+      try {
+        await sendListAndSuspend(db, run, node, ctx);
+      } catch (err) {
+        await logEvent(db, run.id, "error", node.node_key, {
+          reason: "send_list_partial_failure",
+          detail: err instanceof Error ? err.message : String(err),
+        });
+      }
+      // Always persist the new current_node_key — the Meta send may
+      // have succeeded even if the DB persistence threw.
       const advanced = await advanceCurrentNodeKey(
         db,
         run.id,

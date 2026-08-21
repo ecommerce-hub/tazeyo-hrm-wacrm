@@ -310,22 +310,36 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
         const message = value.messages[i]
         const contact = value.contacts[i] || value.contacts[0]
 
-        await processMessage(
-          message,
-          contact,
-          // Tenancy — drives every contact / conversation lookup
-          // and the engines' active-row dispatch.
-          config.account_id,
-          // Audit / sender-of-record — used as the user_id on row
-          // inserts that need it for NOT NULL FK compliance. Always
-          // the admin who saved the WhatsApp config.
-          config.user_id,
-          decryptedAccessToken,
-          // Default ON: the column is NOT NULL DEFAULT TRUE, but a row
-          // read before migration 039 lands would have it undefined,
-          // and losing attachments is the failure mode worth avoiding.
-          config.mirror_inbound_media !== false
-        )
+        try {
+          await processMessage(
+            message,
+            contact,
+            // Tenancy — drives every contact / conversation lookup
+            // and the engines' active-row dispatch.
+            config.account_id,
+            // Audit / sender-of-record — used as the user_id on row
+            // inserts that need it for NOT NULL FK compliance. Always
+            // the admin who saved the WhatsApp config.
+            config.user_id,
+            decryptedAccessToken,
+            // Default ON: the column is NOT NULL DEFAULT TRUE, but a row
+            // read before migration 039 lands would have it undefined,
+            // and losing attachments is the failure mode worth avoiding.
+            config.mirror_inbound_media !== false
+          )
+        } catch (err) {
+          // Per-message catch so one failing message in a batch (e.g.
+          // forwarded messages delivered together) doesn't kill the
+          // remaining messages. The contact/conversation may already
+          // have been created — that's fine, the next delivery will
+          // reuse them.
+          console.error(
+            '[webhook] processMessage failed for message:',
+            message.id,
+            'type:', message.type,
+            err,
+          )
+        }
       }
     }
   }
@@ -1196,9 +1210,22 @@ async function findOrCreateContact(
     // unique index (migration 022/041) rejected the duplicate.
     // Re-resolve the existing row instead of dropping the message.
     if (isUniqueViolation(createError)) {
-      let raced = phone
-        ? await findExistingContact(supabaseAdmin(), accountId, phone)
-        : null
+      // Primary re-fetch: query the generated `phone_normalized`
+      // column directly — the same column the unique index is on.
+      // `findExistingContact` uses LIKE on the raw `phone` column
+      // which can miss contacts whose phone was stored in a
+      // different format (spaces, dashes, +prefix).
+      let raced: ContactRow | null = null
+      if (phone) {
+        const { data } = await supabaseAdmin()
+          .from('contacts')
+          .select('*')
+          .eq('account_id', accountId)
+          .eq('phone_normalized', phone)
+          .maybeSingle()
+        raced = data
+      }
+      // Fall back to BSUID if phone lookup missed.
       if (!raced && bsuid) {
         raced = await findExistingContactByBsuid(supabaseAdmin(), accountId, bsuid)
       }

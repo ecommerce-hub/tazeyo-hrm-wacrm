@@ -342,6 +342,14 @@ export async function sendMessageToConversation(
     }
     templateRow = resolved.row;
     sendLanguage = resolved.language;
+
+    if (templateRow && templateRow.status !== 'APPROVED') {
+      throw new SendMessageError(
+        'template_not_approved',
+        `Template "${templateName}" is not approved by Meta (status: ${templateRow.status}). Only APPROVED templates can be sent.`,
+        400
+      );
+    }
   }
 
   // Recipient fields: phone number (`to`) or BSUID (`recipient`).

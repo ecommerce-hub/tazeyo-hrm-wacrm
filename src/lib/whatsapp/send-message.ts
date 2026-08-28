@@ -343,10 +343,11 @@ export async function sendMessageToConversation(
     templateRow = resolved.row;
     sendLanguage = resolved.language;
 
-    if (templateRow && templateRow.status !== 'APPROVED') {
+    const BLOCKED_STATUSES = ['REJECTED', 'PAUSED', 'DISABLED', 'DRAFT', 'Rejected', 'Draft'];
+    if (templateRow?.status && BLOCKED_STATUSES.includes(templateRow.status)) {
       throw new SendMessageError(
         'template_not_approved',
-        `Template "${templateName}" is not approved by Meta (status: ${templateRow.status}). Only APPROVED templates can be sent.`,
+        `Template "${templateName}" cannot be sent (status: ${templateRow.status}). Only approved templates can be sent.`,
         400
       );
     }

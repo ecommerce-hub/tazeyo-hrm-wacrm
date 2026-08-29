@@ -626,10 +626,15 @@ function InboxPageInner() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: Conversation list.
             Hidden on mobile when a conversation is selected so the
-            thread can occupy the full width. Always visible on lg+. */}
+            thread can occupy the full width. Always visible on lg+.
+
+            `min-w-0` is load-bearing on mobile, where this pane is the
+            flex-1 child: without it, long message previews set the
+            pane's intrinsic min-width past the viewport and the row's
+            right edge (time + unread badge) gets clipped offscreen. */}
         <div
           className={cn(
-            "flex h-full flex-1 lg:flex-none",
+            "flex h-full min-w-0 flex-1 lg:flex-none",
             hasActiveConv ? "hidden lg:flex" : "flex",
           )}
         >

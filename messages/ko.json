@@ -242,6 +242,8 @@
       "statusClosed": "닫힘",
       "archive": "보관",
       "unarchive": "보관 해제",
+      "block": "차단",
+      "unblock": "차단 해제",
       "assign": "담당자 지정",
       "assigned": "담당자 지정됨",
       "unassign": "담당자 해제",
@@ -257,6 +259,7 @@
         "sendFailed": "전송 실패: {reason}",
         "sendTemplateFailed": "템플릿 전송 실패: {reason}",
         "reactionFailed": "반응 실패: {reason}",
+        "blockFailed": "차단 작업 실패: {reason}",
         "networkError": "네트워크 오류",
         "messageStillSending": "메시지 전송이 완료될 때까지 기다려 주세요",
         "assignFailed": "담당자 지정을 업데이트하지 못했습니다"

@@ -242,6 +242,8 @@
       "statusClosed": "Kapalı",
       "archive": "Arşivle",
       "unarchive": "Arşivden Çıkar",
+      "block": "Engelle",
+      "unblock": "Engeli Kaldır",
       "assign": "Ata",
       "assigned": "Atandı",
       "unassign": "Atamayı kaldır",
@@ -257,6 +259,7 @@
         "sendFailed": "Gönderilemedi: {reason}",
         "sendTemplateFailed": "Şablon gönderilemedi: {reason}",
         "reactionFailed": "Tepki verilemedi: {reason}",
+        "blockFailed": "Engelleme işlemi başarısız: {reason}",
         "networkError": "ağ hatası",
         "messageStillSending": "Mesajın gönderilmesini bekleyin",
         "assignFailed": "Atama güncellenemedi"

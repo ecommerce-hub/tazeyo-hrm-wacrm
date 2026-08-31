@@ -81,6 +81,17 @@ function makeDb(rpcResult: { data: unknown; error: unknown }) {
         };
         return chain;
       }
+      if (table === 'contacts') {
+        // The blocked-contact filter (migration 042): no recipient in
+        // these tests is blocked, so the lookup returns no rows.
+        return {
+          select: () => ({
+            in: () => ({
+              eq: () => Promise.resolve({ data: [], error: null }),
+            }),
+          }),
+        };
+      }
       if (table === 'broadcasts' || table === 'broadcast_recipients') {
         calls.usedDirectInsert++;
         return {

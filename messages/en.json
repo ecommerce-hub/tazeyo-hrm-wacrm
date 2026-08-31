@@ -242,6 +242,8 @@
       "statusClosed": "Closed",
       "archive": "Archive",
       "unarchive": "Unarchive",
+      "block": "Block",
+      "unblock": "Unblock",
       "assign": "Assign",
       "assigned": "Assigned",
       "unassign": "Unassign",
@@ -257,6 +259,7 @@
         "sendFailed": "Failed to send: {reason}",
         "sendTemplateFailed": "Failed to send template: {reason}",
         "reactionFailed": "Reaction failed: {reason}",
+        "blockFailed": "Block action failed: {reason}",
         "networkError": "network error",
         "messageStillSending": "Wait for the message to finish sending",
         "assignFailed": "Failed to update assignment"

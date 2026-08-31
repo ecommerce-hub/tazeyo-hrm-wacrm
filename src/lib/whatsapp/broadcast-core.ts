@@ -169,16 +169,32 @@ export async function createBroadcast(
   // params aren't silently overwritten by a later duplicate — and so
   // the row↔params pairing below (keyed by contact_id) is unambiguous.
   const seenContact = new Set<string>();
-  const deduped = resolved.filter((r) => {
+  let deduped = resolved.filter((r) => {
     if (seenContact.has(r.contactId)) return false;
     seenContact.add(r.contactId);
     return true;
   });
 
+  // Drop blocked contacts (migration 042) — a blocked number never
+  // receives a broadcast, even when the caller lists it explicitly.
+  // Counted into `rejected` alongside invalid phones: both are
+  // recipients refused up front, before any recipient row exists.
+  if (deduped.length > 0) {
+    const { data: blockedRows } = await db
+      .from('contacts')
+      .select('id')
+      .in('id', deduped.map((r) => r.contactId))
+      .eq('is_blocked', true);
+    const blockedIds = new Set((blockedRows ?? []).map((r) => r.id));
+    const kept = deduped.filter((r) => !blockedIds.has(r.contactId));
+    rejected += deduped.length - kept.length;
+    deduped = kept;
+  }
+
   if (deduped.length === 0) {
     throw new BroadcastError(
       'bad_request',
-      'No recipients had a valid E.164 phone number',
+      'No recipients had a valid, unblocked E.164 phone number',
       400
     );
   }

@@ -29,6 +29,7 @@ import {
   PanelRightClose,
   Archive,
   ArchiveRestore,
+  Ban,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInHours } from "date-fns";
 import type { Locale } from "date-fns/locale";
@@ -110,6 +111,15 @@ interface MessageThreadProps {
   contactPanelOpen?: boolean;
   onToggleContactPanel?: () => void;
   onArchive?: (conversationId: string, archived: boolean) => void;
+  /**
+   * Number blocking (migration 042). Blocking flips `is_blocked` on the
+   * contact AND archives the conversation; the webhook keeps it archived
+   * no matter how much the contact keeps writing (messages are still
+   * stored). The page owns contact state, so it applies the flag to
+   * every conversation of that contact. Optional so existing callers
+   * keep working; the button only renders when this is wired up.
+   */
+  onBlockChange?: (contactId: string, blocked: boolean) => void;
 }
 
 function formatDateSeparator(
@@ -178,6 +188,7 @@ export function MessageThread({
   contactPanelOpen,
   onToggleContactPanel,
   onArchive,
+  onBlockChange,
 }: MessageThreadProps) {
   const t = useTranslations("Inbox.messageThread");
   const tTimer = useTranslations("Inbox.sessionTimer");
@@ -687,6 +698,28 @@ export function MessageThread({
     onArchive(conversation.id, newVal);
   }, [conversation, onArchive]);
 
+  const handleBlockToggle = useCallback(async () => {
+    if (!conversation || !contact || !onBlockChange) return;
+    const blocked = !contact.is_blocked;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("contacts")
+      .update({ is_blocked: blocked })
+      .eq("id", contact.id);
+    if (error) {
+      toast.error(t("toasts.blockFailed", { reason: error.message }));
+      return;
+    }
+    // Blocking parks the thread in the archive; the webhook keeps it
+    // there (unarchive-on-inbound is suppressed for blocked contacts).
+    // Unblocking deliberately does NOT unarchive — the agent decides
+    // when to surface the thread again.
+    if (blocked && !conversation.is_archived) {
+      await handleArchiveToggle();
+    }
+    onBlockChange(contact.id, blocked);
+  }, [conversation, contact, onBlockChange, handleArchiveToggle, t]);
+
   const handleOpenTemplates = useCallback(() => {
     setTemplateModalOpen(true);
   }, []);
@@ -1062,6 +1095,27 @@ export function MessageThread({
               )}
               <span className="hidden sm:inline">
                 {conversation?.is_archived ? t("unarchive") : t("archive")}
+              </span>
+            </button>
+          )}
+
+          {/* Block toggle — archives the thread and pins it there while
+              the contact keeps being able to write (messages are stored,
+              just never surface the conversation back into the inbox). */}
+          {onBlockChange && contact && (
+            <button
+              onClick={handleBlockToggle}
+              title={contact.is_blocked ? t("unblock") : t("block")}
+              className={cn(
+                "inline-flex items-center justify-center h-7 gap-1 px-2 text-xs rounded-md hover:bg-muted",
+                contact.is_blocked
+                  ? "text-destructive"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Ban className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">
+                {contact.is_blocked ? t("unblock") : t("block")}
               </span>
             </button>
           )}

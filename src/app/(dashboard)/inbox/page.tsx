@@ -133,10 +133,20 @@ function InboxPageInner() {
    * realtime channel). The ref is kept in sync via the effect below.
    */
   const knownConvIdsRef = useRef<Set<string>>(new Set());
+  // Conversations whose contact is blocked (migration 042). Mirrored
+  // synchronously for the same reason as knownConvIdsRef: the message
+  // handler reads it for its sound and auto-unarchive gates before any
+  // setState updater runs.
+  const blockedConvIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     const next = new Set<string>();
-    for (const c of conversations) next.add(c.id);
+    const blocked = new Set<string>();
+    for (const c of conversations) {
+      next.add(c.id);
+      if (c.contact?.is_blocked) blocked.add(c.id);
+    }
     knownConvIdsRef.current = next;
+    blockedConvIdsRef.current = blocked;
   }, [conversations]);
 
   // Pull the conversation row with its `contact` joined and merge it
@@ -237,8 +247,13 @@ function InboxPageInner() {
       const newMsg = event.new;
 
       if (event.eventType === "INSERT") {
-        // Play notification sound for inbound (customer) messages
-        if (newMsg.sender_type === "customer") {
+        // Play notification sound for inbound (customer) messages —
+        // but not for blocked contacts, whose messages land silently
+        // in the archived thread.
+        if (
+          newMsg.sender_type === "customer" &&
+          !blockedConvIdsRef.current.has(newMsg.conversation_id)
+        ) {
           playNotificationSound();
         }
 
@@ -264,6 +279,11 @@ function InboxPageInner() {
         // knownConvIdsRef for why a closure flag inside the updater would
         // always read false here.
         if (knownConvIdsRef.current.has(newMsg.conversation_id)) {
+          // Same source as the sound gate above: blocked threads are
+          // pinned in the archive (mirrors the webhook's gate).
+          const isBlocked = blockedConvIdsRef.current.has(
+            newMsg.conversation_id,
+          );
           setConversations((prev) => {
             const updated = prev.map((c) =>
               c.id === newMsg.conversation_id
@@ -271,8 +291,9 @@ function InboxPageInner() {
                     ...c,
                     last_message_text: newMsg.content_text ?? "",
                     last_message_at: newMsg.created_at,
-                    // Auto-unarchive when a new message arrives
-                    is_archived: false,
+                    // Auto-unarchive when a new message arrives — unless
+                    // the contact is blocked.
+                    is_archived: isBlocked ? c.is_archived : false,
                     unread_count:
                       activeConversation?.id === newMsg.conversation_id
                         ? 0
@@ -583,6 +604,26 @@ function InboxPageInner() {
     [activeConversation]
   );
 
+  // Number blocking (migration 042). The flag lives on the CONTACT, so
+  // apply it to every conversation carrying that contact — the realtime
+  // handlers and the sound/unarchive gates all read `contact.is_blocked`
+  // off the conversation rows.
+  const handleBlockChange = useCallback(
+    (contactId: string, blocked: boolean) => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.contact_id === contactId && c.contact
+            ? { ...c, contact: { ...c.contact, is_blocked: blocked } }
+            : c
+        )
+      );
+      setActiveContact((prev) =>
+        prev && prev.id === contactId ? { ...prev, is_blocked: blocked } : prev
+      );
+    },
+    []
+  );
+
   const handleAssignChange = useCallback(
     (conversationId: string, assignedAgentId: string | null) => {
       setConversations((prev) =>
@@ -678,6 +719,7 @@ function InboxPageInner() {
             contactPanelOpen={contactPanelOpen}
             onToggleContactPanel={handleToggleContactPanel}
             onArchive={handleArchive}
+            onBlockChange={handleBlockChange}
           />
         </div>
 

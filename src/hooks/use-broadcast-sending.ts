@@ -173,7 +173,10 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
     let contacts: Contact[] = [];
 
     if (audience.type === 'all') {
-      const { data, error } = await supabase.from('contacts').select('*');
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('is_blocked', false);
       if (error)
         throw new Error(t('fetchContacts', { error: error.message }));
       contacts = data ?? [];
@@ -197,7 +200,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
         const { data, error } = await supabase
           .from('contacts')
           .select('*')
-          .in('id', uniqueContactIds);
+          .in('id', uniqueContactIds)
+          .eq('is_blocked', false);
         if (error)
           throw new Error(t('fetchContacts', { error: error.message }));
         contacts = data ?? [];
@@ -218,6 +222,12 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       const excludedIds = new Set((excludeRows ?? []).map((r) => r.contact_id));
       contacts = contacts.filter((c) => !excludedIds.has(c.id));
     }
+
+    // Blocked contacts (migration 042) never receive broadcasts. The
+    // contact-derived audience queries above already exclude them
+    // DB-side; this backstop covers CSV-resolved contacts (which are
+    // looked up / created by phone) and any future audience type.
+    contacts = contacts.filter((c) => !c.is_blocked);
 
     return contacts;
   }
@@ -332,7 +342,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
     const { data, error } = await supabase
       .from('contacts')
       .select('*')
-      .in('id', contactIds);
+      .in('id', contactIds)
+      .eq('is_blocked', false);
     if (error) throw new Error(t('fetchContacts', { error: error.message }));
     return data ?? [];
   }

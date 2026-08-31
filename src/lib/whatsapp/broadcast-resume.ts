@@ -108,9 +108,10 @@ export interface ResumePlan {
   /** In-scope recipients left over after the per-request cap. */
   remaining: number;
   /**
-   * In-scope rows that can never send because their contact has no
-   * usable phone. Stamped 'failed' by {@link planBroadcastResume} so
-   * they stop blocking the broadcast's terminal status.
+   * In-scope rows that can never send — the contact has no usable
+   * phone, or is blocked (migration 042). Stamped 'failed' by
+   * {@link planBroadcastResume} so they stop blocking the broadcast's
+   * terminal status.
    */
   unsendable: number;
 }
@@ -118,13 +119,23 @@ export interface ResumePlan {
 interface RecipientRow {
   id: string;
   template_params: unknown;
-  contact: { phone?: string | null } | { phone?: string | null }[] | null;
+  contact:
+    | { phone?: string | null; is_blocked?: boolean | null }
+    | { phone?: string | null; is_blocked?: boolean | null }[]
+    | null;
 }
 
 /** Supabase renders an embedded to-one join as an object or a 1-array. */
+function contactOf(row: RecipientRow) {
+  return Array.isArray(row.contact) ? row.contact[0] : row.contact;
+}
+
 function contactPhone(row: RecipientRow): string | null {
-  const c = Array.isArray(row.contact) ? row.contact[0] : row.contact;
-  return c?.phone ?? null;
+  return contactOf(row)?.phone ?? null;
+}
+
+function contactIsBlocked(row: RecipientRow): boolean {
+  return contactOf(row)?.is_blocked === true;
 }
 
 /**
@@ -158,7 +169,7 @@ export async function planBroadcastResume(
   const statuses = scopeStatuses(scope);
   const { data: rawRows, error: recError } = await db
     .from('broadcast_recipients')
-    .select('id, template_params, contact:contacts(phone)')
+    .select('id, template_params, contact:contacts(phone, is_blocked)')
     .eq('broadcast_id', broadcastId)
     .in('status', statuses)
     // Oldest first, so repeated capped passes chew through the backlog
@@ -172,25 +183,32 @@ export async function planBroadcastResume(
 
   const rows = (rawRows ?? []) as RecipientRow[];
 
-  // A recipient whose contact has no usable phone can never send. Stamp
-  // it failed now: leaving it 'pending' would keep the broadcast in
-  // 'sending' forever, which is the very symptom being fixed.
+  // A recipient whose contact has no usable phone can never send, and a
+  // contact blocked since the broadcast was created (migration 042) must
+  // never receive it. Stamp both failed now: leaving them 'pending'
+  // would keep the broadcast in 'sending' forever, which is the very
+  // symptom being fixed. A blocked row's distinct error message means
+  // an "retry failed" pass after unblocking can still pick it up.
   const sendable: RecipientRow[] = [];
   const unsendable: string[] = [];
+  const blocked: string[] = [];
   for (const row of rows) {
-    const sanitized = sanitizePhoneForMeta(contactPhone(row) ?? '');
-    if (isValidE164(sanitized)) sendable.push(row);
+    if (contactIsBlocked(row)) blocked.push(row.id);
+    else if (isValidE164(sanitizePhoneForMeta(contactPhone(row) ?? '')))
+      sendable.push(row);
     else unsendable.push(row.id);
   }
-  if (unsendable.length > 0) {
-    await db
-      .from('broadcast_recipients')
-      .update({
-        status: 'failed',
-        error_message: 'No valid phone number on contact',
-      })
-      .in('id', unsendable);
-  }
+  const stampFailed = (ids: string[], message: string) =>
+    ids.length > 0
+      ? db
+          .from('broadcast_recipients')
+          .update({ status: 'failed', error_message: message })
+          .in('id', ids)
+      : Promise.resolve();
+  await Promise.all([
+    stampFailed(unsendable, 'No valid phone number on contact'),
+    stampFailed(blocked, 'Contact is blocked'),
+  ]);
 
   const slice = sendable.slice(0, RESUME_MAX_PER_REQUEST);
   const remaining = sendable.length - slice.length;
@@ -249,7 +267,7 @@ export async function planBroadcastResume(
     rejected: 0,
   };
 
-  return { plan, remaining, unsendable: unsendable.length };
+  return { plan, remaining, unsendable: unsendable.length + blocked.length };
 }
 
 /**

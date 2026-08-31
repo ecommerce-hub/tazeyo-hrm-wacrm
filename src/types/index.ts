@@ -113,6 +113,13 @@ export interface Contact {
   /** Hydrated by queries that embed `contact_tags(tags(*))` (e.g. the
    *  Inbox conversation list, for tag filtering). Absent otherwise. */
   tags?: Tag[];
+  /**
+   * Number blocking (migration 042). Messages from a blocked contact
+   * are still stored, but their conversation stays archived (the
+   * unarchive-on-inbound paths are suppressed) and flows / automations /
+   * AI auto-reply never fire for them.
+   */
+  is_blocked?: boolean;
 }
 
 export interface Tag {

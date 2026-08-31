@@ -171,6 +171,13 @@ export async function PATCH(
         })
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Meta edit failed.'
+        // Also log server-side: the 502 below carries the message to the
+        // caller and submission_error persists it, but neither shows up
+        // in container logs when diagnosing from infrastructure alone.
+        console.error(
+          `Meta template edit failed (template ${id}, hsm ${existing.meta_template_id}):`,
+          message,
+        )
         await supabase
           .from('message_templates')
           .update({
@@ -299,6 +306,10 @@ export async function DELETE(
         })
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Meta delete failed.'
+        console.error(
+          `Meta template delete failed (template ${id}, hsm ${existing.meta_template_id}):`,
+          message,
+        )
         return NextResponse.json({ error: message }, { status: 502 })
       }
     }

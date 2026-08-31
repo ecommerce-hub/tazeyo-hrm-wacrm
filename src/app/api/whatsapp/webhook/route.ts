@@ -85,7 +85,9 @@ interface WhatsAppWebhookEntry {
         phone_number_id: string
       }
       contacts?: Array<{
-        profile: { name: string; username?: string }
+        /** Omitted by Meta for some deliveries (observed in production —
+         *  a text message arrived with a contact entry but no profile). */
+        profile?: { name?: string; username?: string }
         /** Phone number — omitted when the user has enabled usernames. */
         wa_id?: string
         /** Business-scoped user ID — always present (April 2026+). */
@@ -262,8 +264,11 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
         }
       }
 
-      // Handle incoming messages
-      if (!value.messages || !value.contacts) continue
+      // Handle incoming messages. `contacts` is deliberately NOT
+      // required: it only supplies the sender's display name, and the
+      // sender is identified by message.from / from_user_id — dropping
+      // the whole batch over a missing name loses real messages.
+      if (!value.messages) continue
 
       const phoneNumberId = value.metadata.phone_number_id
 
@@ -308,7 +313,7 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
 
       for (let i = 0; i < value.messages.length; i++) {
         const message = value.messages[i]
-        const contact = value.contacts[i] || value.contacts[0]
+        const contact = value.contacts?.[i] ?? value.contacts?.[0]
 
         try {
           await processMessage(
@@ -598,7 +603,13 @@ async function handleReaction(
 
 async function processMessage(
   message: WhatsAppMessage,
-  contact: { profile: { name: string }; wa_id?: string; user_id?: string },
+  // Optional end to end: Meta sometimes delivers messages without a
+  // contacts entry, or with one that lacks `profile` (seen in
+  // production). The sender is identified by message.from /
+  // from_user_id; this only contributes the display name + BSUID.
+  contact:
+    | { profile?: { name?: string }; wa_id?: string; user_id?: string }
+    | undefined,
   // Tenancy. Resolved from the matched whatsapp_config row; every
   // contact / conversation / message row created downstream is
   // stamped with this so any member of the account can see it.
@@ -613,8 +624,10 @@ async function processMessage(
   mirrorMedia: boolean
 ) {
   const senderPhone = normalizePhone(message.from ?? '')
-  const senderBsuid = message.from_user_id || contact.user_id || ''
-  const contactName = contact.profile.name
+  const senderBsuid = message.from_user_id || contact?.user_id || ''
+  // findOrCreateContact falls back to BSUID, then phone, when the name
+  // is empty, so a missing profile still yields a usable contact row.
+  const contactName = contact?.profile?.name ?? ''
 
   // Find or create contact
   const contactOutcome = await findOrCreateContact(
@@ -1209,7 +1222,9 @@ async function findOrCreateContact(
       user_id: configOwnerUserId,
       phone: phone || null,
       bsuid: bsuid || null,
-      name: name || phone || bsuid,
+      // Display-name fallback when the webhook carried no profile name:
+      // prefer the BSUID (stable sender identity) over the raw phone.
+      name: name || bsuid || phone,
     })
     .select()
     .single()

@@ -27,6 +27,33 @@ import type {
 
 type DB = SupabaseClient
 
+/**
+ * Fetch EVERY row of a query, paging past PostgREST's response cap
+ * (1000 rows by default on Supabase). Without this, an unbounded
+ * `.select()` silently truncates: the conversations chart read the
+ * oldest 1000 messages of its window and rendered recent days as
+ * zero once an account outgrew that, and the response-time card
+ * averaged an arbitrary subset.
+ *
+ * `build` must return a NEW builder each call (PostgREST builders are
+ * single-use) with a deterministic `.order()` so pages don't overlap.
+ */
+async function fetchAllRows<T>(
+  build: () => PromiseLike<{ data: unknown; error: unknown }> & {
+    range: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>
+  },
+  pageSize = 1000,
+): Promise<T[]> {
+  const out: T[] = []
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await build().range(from, from + pageSize - 1)
+    if (error) throw error
+    const rows = (data ?? []) as T[]
+    out.push(...rows)
+    if (rows.length < pageSize) return out
+  }
+}
+
 // --- 1. Metric cards ---------------------------------------------------
 
 export async function loadMetrics(db: DB): Promise<MetricsBundle> {
@@ -106,18 +133,19 @@ export async function loadConversationsSeries(
   rangeDays: number,
 ): Promise<ConversationsSeriesPoint[]> {
   const start = daysAgoStart(rangeDays - 1).toISOString()
-  const { data, error } = await db
-    .from('messages')
-    .select('created_at, sender_type')
-    .gte('created_at', start)
-    .order('created_at', { ascending: true })
-  if (error) throw error
+  const rows = await fetchAllRows<{ created_at: string; sender_type: string }>(() =>
+    db
+      .from('messages')
+      .select('created_at, sender_type')
+      .gte('created_at', start)
+      .order('created_at', { ascending: true }),
+  )
 
   const keys = lastNDayKeys(rangeDays)
   const buckets = new Map<string, { incoming: number; outgoing: number }>()
   for (const k of keys) buckets.set(k, { incoming: 0, outgoing: 0 })
 
-  for (const row of (data ?? []) as { created_at: string; sender_type: string }[]) {
+  for (const row of rows) {
     const key = localDayKey(row.created_at)
     const bucket = buckets.get(key)
     if (!bucket) continue
@@ -176,19 +204,18 @@ export async function loadResponseTime(db: DB): Promise<ResponseTimeSummary> {
   // with enough overlap if the user opens the dashboard late on a
   // Monday.
   const fourteenDaysAgo = daysAgoStart(13).toISOString()
-  const { data, error } = await db
-    .from('messages')
-    .select('conversation_id, sender_type, created_at')
-    .gte('created_at', fourteenDaysAgo)
-    .order('conversation_id', { ascending: true })
-    .order('created_at', { ascending: true })
-  if (error) throw error
-
-  const rows = (data ?? []) as {
+  const rows = await fetchAllRows<{
     conversation_id: string
     sender_type: string
     created_at: string
-  }[]
+  }>(() =>
+    db
+      .from('messages')
+      .select('conversation_id, sender_type, created_at')
+      .gte('created_at', fourteenDaysAgo)
+      .order('conversation_id', { ascending: true })
+      .order('created_at', { ascending: true }),
+  )
 
   // Group per conversation, pair unreplied customer messages with the
   // next outbound message from the agent/bot. A single customer message

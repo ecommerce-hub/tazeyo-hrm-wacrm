@@ -172,6 +172,48 @@ export async function POST(request: Request) {
     }
     const templateRow = resolvedTemplate.row
 
+    // Server-side blocked-contact guard. The wizard filters blocked
+    // contacts at audience-resolution time, but a rate-limited campaign
+    // can run for many minutes — a contact blocked mid-send must not
+    // receive the tail of it, and this route must not trust its caller
+    // either way. One batched lookup per request; keyed by contactId
+    // when provided (the wizard always sends it), by phone_normalized
+    // otherwise. The error message matches broadcast-resume's so a
+    // "retry failed" pass after unblocking picks these rows up.
+    const blockedContactIds = new Set<string>()
+    const blockedPhones = new Set<string>()
+    {
+      const ids = recipients
+        .map((r) => r.contactId)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+      const phones = recipients
+        .filter((r) => !r.contactId)
+        .map((r) => normalizePhone(sanitizePhoneForMeta(r.phone)))
+        .filter(Boolean)
+      const [byId, byPhone] = await Promise.all([
+        ids.length > 0
+          ? supabase
+              .from('contacts')
+              .select('id')
+              .in('id', ids)
+              .eq('is_blocked', true)
+          : Promise.resolve({ data: [] as { id: string }[] }),
+        phones.length > 0
+          ? supabase
+              .from('contacts')
+              .select('phone_normalized')
+              .in('phone_normalized', phones)
+              .eq('is_blocked', true)
+          : Promise.resolve({ data: [] as { phone_normalized: string }[] }),
+      ])
+      for (const row of (byId.data ?? []) as { id: string }[]) {
+        blockedContactIds.add(row.id)
+      }
+      for (const row of (byPhone.data ?? []) as { phone_normalized: string }[]) {
+        blockedPhones.add(row.phone_normalized)
+      }
+    }
+
     const results: BroadcastResult[] = []
     let sentCount = 0
     let failedCount = 0
@@ -184,6 +226,19 @@ export async function POST(request: Request) {
           phone: recipient.phone,
           status: 'failed',
           error: 'Invalid phone number format',
+        })
+        failedCount++
+        continue
+      }
+
+      if (
+        (recipient.contactId && blockedContactIds.has(recipient.contactId)) ||
+        (!recipient.contactId && blockedPhones.has(normalizePhone(sanitized)))
+      ) {
+        results.push({
+          phone: recipient.phone,
+          status: 'failed',
+          error: 'Contact is blocked',
         })
         failedCount++
         continue

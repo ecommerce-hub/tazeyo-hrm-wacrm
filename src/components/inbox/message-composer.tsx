@@ -100,16 +100,6 @@ const PICKER_ACCEPT: Record<"image" | "video" | "document", string> = {
     "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain",
 };
 
-/** Catalogue keys for the translated media-kind noun used inside the
- *  over-the-limit toast ("… image limit is 5 MB."). The kind itself is a
- *  technical discriminator, so the label is looked up rather than shown. */
-const KIND_LABEL_KEY: Record<ComposerMediaKind, string> = {
-  image: "toasts.kindImage",
-  video: "toasts.kindVideo",
-  document: "toasts.kindDocument",
-  audio: "toasts.kindAudio",
-};
-
 interface MediaDraft {
   kind: ComposerMediaKind;
   mediaUrl: string;
@@ -152,9 +142,6 @@ export function MessageComposer({
   onClearReply,
 }: MessageComposerProps) {
   const t = useTranslations("Inbox.composer");
-  // The interactive validator is shared with server paths, so it returns
-  // a code + params instead of prose; translate it here.
-  const tInteractive = useTranslations("Interactive");
 
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -282,15 +269,15 @@ export function MessageComposer({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.code === "ai_not_configured") {
-          toast.error(t("toasts.aiNotConfigured"));
+          toast.error(t("aiNotConfigured"));
         } else {
-          toast.error(data.error ?? t("toasts.draftFailed"));
+          toast.error(data.error ?? t("draftFailed"));
         }
         return;
       }
       const draftText = typeof data.draft === "string" ? data.draft.trim() : "";
       if (!draftText) {
-        toast.error(t("toasts.draftEmpty"));
+        toast.error(t("draftEmpty"));
         return;
       }
       setText(draftText);
@@ -305,7 +292,7 @@ export function MessageComposer({
         }
       });
     } catch {
-      toast.error(t("toasts.aiUnreachable"));
+      toast.error(t("aiUnreachable"));
     } finally {
       setDrafting(false);
     }
@@ -324,25 +311,19 @@ export function MessageComposer({
   const sendInteractive = useCallback(() => {
     const result = validateInteractivePayload(interactivePayload);
     if (!result.ok) {
-      toast.error(tInteractive(`validation.${result.code}`, result.params));
+      toast.error(result.error);
       return;
     }
     onSendInteractive(interactivePayload, replyTo?.id);
     setInteractiveOpen(false);
     onClearReply?.();
-  }, [
-    interactivePayload,
-    onSendInteractive,
-    replyTo?.id,
-    onClearReply,
-    tInteractive,
-  ]);
+  }, [interactivePayload, onSendInteractive, replyTo?.id, onClearReply]);
 
   // Persist the current builder payload as a reusable interactive snippet.
   const saveAsQuickReply = useCallback(async () => {
     const result = validateInteractivePayload(interactivePayload);
     if (!result.ok) {
-      toast.error(tInteractive(`validation.${result.code}`, result.params));
+      toast.error(result.error);
       return;
     }
     const title = window
@@ -371,7 +352,7 @@ export function MessageComposer({
     } finally {
       setSavingQuickReply(false);
     }
-  }, [interactivePayload, t, tInteractive]);
+  }, [interactivePayload, t]);
 
   // A picked quick reply: text fills the composer; interactive opens the
   // builder pre-filled so the agent can tweak before sending.
@@ -409,11 +390,9 @@ export function MessageComposer({
       const max = MEDIA_MAX_BYTES_BY_KIND[kind];
       if (file.size > max) {
         toast.error(
-          t("toasts.fileTooLarge", {
-            size: Number((file.size / 1024 / 1024).toFixed(1)),
-            kind: t(KIND_LABEL_KEY[kind]),
-            limit: Math.round(max / 1024 / 1024),
-          }),
+          `File is ${(file.size / 1024 / 1024).toFixed(1)} MB — ${kind} limit is ${Math.round(
+            max / 1024 / 1024,
+          )} MB.`,
         );
         return;
       }
@@ -424,12 +403,12 @@ export function MessageComposer({
         removeStaged(draftRef.current?.path);
         setDraft({ kind, mediaUrl: publicUrl, path, filename: file.name, caption: "" });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t("toasts.uploadFailed"));
+        toast.error(err instanceof Error ? err.message : "Upload failed.");
       } finally {
         setBusy(false);
       }
     },
-    [removeStaged, t],
+    [removeStaged],
   );
 
   const handlePicked = useCallback(
@@ -452,11 +431,7 @@ export function MessageComposer({
       });
       if (file.size === 0) return; // cancelled / empty take
       if (file.size > MEDIA_MAX_BYTES_BY_KIND.audio) {
-        toast.error(
-          t("toasts.recordingTooLong", {
-            limit: Math.round(MEDIA_MAX_BYTES_BY_KIND.audio / 1024 / 1024),
-          }),
-        );
+        toast.error(t("recordingTooLong"));
         return;
       }
       setBusy(true);
@@ -465,7 +440,7 @@ export function MessageComposer({
         removeStaged(draftRef.current?.path);
         setDraft({ kind: "audio", mediaUrl: publicUrl, path, filename: file.name, caption: "" });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t("toasts.uploadFailed"));
+        toast.error(err instanceof Error ? err.message : "Upload failed.");
       } finally {
         setBusy(false);
       }
@@ -476,7 +451,7 @@ export function MessageComposer({
   const startRecording = useCallback(async () => {
     if (inputsDisabled || busy || recording) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof AudioContext === "undefined") {
-      toast.error(t("toasts.recordingUnsupported"));
+      toast.error(t("recordingUnsupported"));
       return;
     }
     try {
@@ -503,7 +478,7 @@ export function MessageComposer({
     } catch {
       void recorderRef.current?.stop().catch(() => {});
       recorderRef.current = null;
-      toast.error(t("toasts.micUnavailable"));
+      toast.error(t("microphoneDenied"));
     }
   }, [inputsDisabled, busy, recording, finalizeRecording, t]);
 

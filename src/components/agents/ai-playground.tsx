@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Bot, RotateCcw, Send, Loader2, UserCircle2, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -39,18 +39,15 @@ export function AiPlayground({ onGoToSetup }: { onGoToSetup?: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         // Send only role+content — the server ignores anything else.
         body: JSON.stringify({
-          messages: next.map((turn) => ({
-            role: turn.role,
-            content: turn.content,
-          })),
+          messages: next.map((t) => ({ role: t.role, content: t.content })),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.code === 'ai_not_configured') {
-          toast.error(t('errorNotConfigured'));
+          toast.error(t('notConfigured'));
         } else {
-          toast.error(data.error ?? t('errorNoReply'));
+          toast.error(data.error ?? t('noReply'));
         }
         // Roll the unsent user turn back so the transcript stays clean.
         setTurns(turns);
@@ -69,7 +66,7 @@ export function AiPlayground({ onGoToSetup }: { onGoToSetup?: () => void }) {
         },
       ]);
     } catch {
-      toast.error(t('errorUnreachable'));
+      toast.error(t('unreachable'));
       setTurns(turns);
       setInput(text);
     } finally {
@@ -90,10 +87,10 @@ export function AiPlayground({ onGoToSetup }: { onGoToSetup?: () => void }) {
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <Bot className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">
-            {t('title')}
+          <span className="text-sm font-medium text-foreground">{t('title')}</span>
+          <span className="text-xs text-muted-foreground">
+            {t('subtitle')}
           </span>
-          <span className="text-xs text-muted-foreground">{t('subtitle')}</span>
         </div>
         <Button
           variant="ghost"
@@ -112,7 +109,9 @@ export function AiPlayground({ onGoToSetup }: { onGoToSetup?: () => void }) {
           <div className="flex h-full flex-col items-center justify-center text-center text-sm text-muted-foreground">
             <Bot className="mb-2 h-8 w-8 text-muted-foreground/60" />
             <p>{t('emptyTitle')}</p>
-            <p className="mt-1 text-xs">{t('emptyBody')}</p>
+            <p className="mt-1 text-xs">
+              {t('emptyDesc')}
+            </p>
             {onGoToSetup && (
               <Button
                 variant="link"
@@ -145,9 +144,7 @@ export function AiPlayground({ onGoToSetup }: { onGoToSetup?: () => void }) {
                   : 'rounded-bl-sm bg-muted text-foreground',
               )}
             >
-              {turn.content && (
-                <p className="whitespace-pre-wrap">{turn.content}</p>
-              )}
+              {turn.content && <p className="whitespace-pre-wrap">{turn.content}</p>}
               {turn.role === 'assistant' && turn.handoff && (
                 <p
                   className={cn(
@@ -180,7 +177,7 @@ export function AiPlayground({ onGoToSetup }: { onGoToSetup?: () => void }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={t('inputPlaceholder')}
+          placeholder={t('placeholder')}
           rows={1}
           className="flex-1 resize-none rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-primary/50"
         />

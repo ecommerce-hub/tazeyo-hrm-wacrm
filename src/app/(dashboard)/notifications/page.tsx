@@ -8,10 +8,10 @@ import type { Notification } from "@/types";
 import { Bell, CheckCheck, Loader2, UserPlus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/lib/i18n/date";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 // Icon per notification type. Only one type exists today
 // (conversation_assigned) but this keeps future types a one-line add.
@@ -108,7 +108,7 @@ export default function NotificationsPage() {
         .eq("id", id)
         .is("read_at", null);
       if (updateErr) {
-        toast.error(t("toastMarkReadFailed"));
+        toast.error(t("markReadFailed"));
         load();
       }
     },
@@ -141,7 +141,7 @@ export default function NotificationsPage() {
       .is("read_at", null);
     setMarkingAll(false);
     if (updateErr) {
-      toast.error(t("toastMarkAllReadFailed"));
+      toast.error(t("markAllFailed"));
       load();
     }
   }, [unreadIds.length, load, t]);
@@ -198,7 +198,7 @@ export default function NotificationsPage() {
             {t("emptyTitle")}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {t("emptyBody")}
+            {t("emptyDesc")}
           </p>
         </div>
       ) : (

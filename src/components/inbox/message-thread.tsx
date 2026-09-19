@@ -32,8 +32,6 @@ import {
   Ban,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInHours } from "date-fns";
-import type { Locale } from "date-fns/locale";
-import { useDateFnsLocale } from "@/lib/i18n/date";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -58,6 +56,7 @@ import { TemplatePicker } from "./template-picker";
 import { AiThreadBanner } from "./ai-thread-banner";
 import { buildReplyPreview } from "./reply-quote";
 import { renderTemplateBody } from "@/lib/whatsapp/template-body";
+import { contactHandle } from "@/lib/whatsapp/wa-identity";
 import { toast } from "sonner";
 
 interface ReplyDraft {
@@ -112,25 +111,21 @@ interface MessageThreadProps {
   onToggleContactPanel?: () => void;
   onArchive?: (conversationId: string, archived: boolean) => void;
   /**
-   * Number blocking (migration 042). Blocking flips `is_blocked` on the
-   * contact AND archives the conversation; the webhook keeps it archived
-   * no matter how much the contact keeps writing (messages are still
-   * stored). The page owns contact state, so it applies the flag to
+   * Number blocking (contact_block migration). Blocking flips `is_blocked`
+   * on the contact AND archives the conversation; the webhook keeps it
+   * archived no matter how much the contact keeps writing (messages are
+   * still stored). The page owns contact state, so it applies the flag to
    * every conversation of that contact. Optional so existing callers
    * keep working; the button only renders when this is wired up.
    */
   onBlockChange?: (contactId: string, blocked: boolean) => void;
 }
 
-function formatDateSeparator(
-  dateStr: string,
-  t: ReturnType<typeof useTranslations>,
-  locale: Locale,
-): string {
+function formatDateSeparator(dateStr: string, t: ReturnType<typeof useTranslations>): string {
   const date = new Date(dateStr);
   if (isToday(date)) return t("today");
   if (isYesterday(date)) return t("yesterday");
-  return format(date, "MMMM d, yyyy", { locale });
+  return format(date, "MMMM d, yyyy");
 }
 
 function groupMessagesByDate(messages: Message[]) {
@@ -138,8 +133,6 @@ function groupMessagesByDate(messages: Message[]) {
   let currentDate = "";
 
   for (const msg of messages) {
-    // Grouping key only — never rendered, so it stays locale-independent
-    // (a stable machine format is what makes the day comparison work).
     const day = format(new Date(msg.created_at), "yyyy-MM-dd");
     if (day !== currentDate) {
       currentDate = day;
@@ -152,13 +145,10 @@ function groupMessagesByDate(messages: Message[]) {
   return groups;
 }
 
-// `value` is the enum the server stores — never translate it. `labelKey`
-// points at the existing Inbox.messageThread.status* label so the chip and
-// the dropdown item read in the user's locale.
-const STATUS_OPTIONS: { labelKey: string; value: ConversationStatus; color: string }[] = [
-  { labelKey: "statusOpen", value: "open", color: "text-primary" },
-  { labelKey: "statusPending", value: "pending", color: "text-amber-400" },
-  { labelKey: "statusClosed", value: "closed", color: "text-muted-foreground" },
+const STATUS_OPTIONS: { label: string; value: ConversationStatus; color: string }[] = [
+  { label: "Open", value: "open", color: "text-primary" },
+  { label: "Pending", value: "pending", color: "text-amber-400" },
+  { label: "Closed", value: "closed", color: "text-muted-foreground" },
 ];
 
 /**
@@ -191,11 +181,9 @@ export function MessageThread({
   onBlockChange,
 }: MessageThreadProps) {
   const t = useTranslations("Inbox.messageThread");
+  const tPresence = useTranslations("Common.presence");
   const tTimer = useTranslations("Inbox.sessionTimer");
   const tQuote = useTranslations("Inbox.replyQuote");
-  // Shared with the members roster — see Common.presence.
-  const tPresence = useTranslations("Common.presence");
-  const locale = useDateFnsLocale();
 
   const { user } = useAuth();
   const { getPresence, getRow, now } = usePresence();
@@ -269,8 +257,7 @@ export function MessageThread({
       .reverse()
       .find((m) => m.sender_type === "customer");
 
-    if (!lastCustomerMsg)
-      return { expired: true, remaining: tTimer("noCustomerMessages") };
+    if (!lastCustomerMsg) return { expired: true, remaining: tTimer("noCustomerMessages") };
 
     const hoursSince = differenceInHours(new Date(), new Date(lastCustomerMsg.created_at));
     const expired = hoursSince >= 24;
@@ -530,7 +517,7 @@ export function MessageThread({
         if (!res.ok) {
           const reason = payload?.error || `HTTP ${res.status}`;
           console.error("Failed to send message:", reason);
-          toast.error(t("toasts.sendFailed", { reason }));
+          toast.error(t("sendFailed", { reason }));
           // Mark the optimistic bubble as failed so the user sees what happened
           onUpdateMessage(tempId, { status: "failed" });
           return;
@@ -542,9 +529,8 @@ export function MessageThread({
         onUpdateMessage(tempId, { status: "sent" });
       } catch (err) {
         console.error("Failed to send message:", err);
-        const reason =
-          err instanceof Error ? err.message : t("toasts.networkError");
-        toast.error(t("toasts.sendFailed", { reason }));
+        const reason = err instanceof Error ? err.message : "network error";
+        toast.error(t("sendFailed", { reason }));
         onUpdateMessage(tempId, { status: "failed" });
       }
     },
@@ -597,7 +583,7 @@ export function MessageThread({
         if (!res.ok) {
           const reason = data?.error || `HTTP ${res.status}`;
           console.error("Failed to send media:", reason);
-          toast.error(t("toasts.sendFailed", { reason }));
+          toast.error(t("sendFailed", { reason }));
           onUpdateMessage(tempId, { status: "failed" });
           // The upload never reached the recipient — GC the orphaned
           // object rather than leaving it in the public bucket forever.
@@ -608,9 +594,8 @@ export function MessageThread({
         onUpdateMessage(tempId, { status: "sent" });
       } catch (err) {
         console.error("Failed to send media:", err);
-        const reason =
-          err instanceof Error ? err.message : t("toasts.networkError");
-        toast.error(t("toasts.sendFailed", { reason }));
+        const reason = err instanceof Error ? err.message : "network error";
+        toast.error(t("sendFailed", { reason }));
         onUpdateMessage(tempId, { status: "failed" });
         void deleteAccountMedia(CHAT_MEDIA_BUCKET, payload.path).catch(() => {});
       }
@@ -655,7 +640,7 @@ export function MessageThread({
         if (!res.ok) {
           const reason = data?.error || `HTTP ${res.status}`;
           console.error("Failed to send interactive message:", reason);
-          toast.error(t("toasts.sendFailed", { reason }));
+          toast.error(t("sendFailed", { reason }));
           onUpdateMessage(tempId, { status: "failed" });
           return;
         }
@@ -663,9 +648,8 @@ export function MessageThread({
         onUpdateMessage(tempId, { status: "sent" });
       } catch (err) {
         console.error("Failed to send interactive message:", err);
-        const reason =
-          err instanceof Error ? err.message : t("toasts.networkError");
-        toast.error(t("toasts.sendFailed", { reason }));
+        const reason = err instanceof Error ? err.message : "network error";
+        toast.error(t("sendFailed", { reason }));
         onUpdateMessage(tempId, { status: "failed" });
       }
     },
@@ -778,7 +762,7 @@ export function MessageThread({
         if (!res.ok) {
           const reason = payload?.error || `HTTP ${res.status}`;
           console.error("Failed to send template:", reason);
-          toast.error(t("toasts.sendTemplateFailed", { reason }));
+          toast.error(t("sendTemplateFailed", { reason }));
           onUpdateMessage(tempId, { status: "failed" });
           return;
         }
@@ -786,9 +770,8 @@ export function MessageThread({
         onUpdateMessage(tempId, { status: "sent" });
       } catch (err) {
         console.error("Failed to send template:", err);
-        const reason =
-          err instanceof Error ? err.message : t("toasts.networkError");
-        toast.error(t("toasts.sendTemplateFailed", { reason }));
+        const reason = err instanceof Error ? err.message : "network error";
+        toast.error(t("sendTemplateFailed", { reason }));
         onUpdateMessage(tempId, { status: "failed" });
       }
     },
@@ -819,7 +802,7 @@ export function MessageThread({
   }, [reactions]);
 
   const contactDisplayName =
-    contact?.name || contact?.phone || t("labels.customer");
+    contact?.name || (contact ? contactHandle(contact) : "") || t("customer");
 
   // Author label for a quoted message: "You" when we sent the parent,
   // contact name when the customer sent it.
@@ -827,9 +810,9 @@ export function MessageThread({
     (m: Message): string => {
       const isAgentMsg =
         m.sender_type === "agent" || m.sender_type === "bot";
-      return isAgentMsg ? t("labels.you") : contactDisplayName;
+      return isAgentMsg ? "You" : contactDisplayName;
     },
-    [contactDisplayName, t],
+    [contactDisplayName],
   );
 
   const handleStartReply = useCallback(
@@ -854,7 +837,7 @@ export function MessageThread({
         return;
       }
       if (messageId.startsWith("temp-")) {
-        toast.error(t("toasts.messageStillSending"));
+        toast.error(t("waitForSending"));
         return;
       }
 
@@ -899,9 +882,8 @@ export function MessageThread({
           throw new Error(payload?.error || `HTTP ${res.status}`);
         }
       } catch (err) {
-        const reason =
-          err instanceof Error ? err.message : t("toasts.networkError");
-        toast.error(t("toasts.reactionFailed", { reason }));
+        const reason = err instanceof Error ? err.message : "network error";
+        toast.error(t("reactionFailed", { reason }));
         setReactions(snapshot);
       }
     },
@@ -920,7 +902,7 @@ export function MessageThread({
 
       if (error) {
         console.error("Failed to update assignment:", error);
-        toast.error(t("toasts.assignFailed"));
+        toast.error(t("assignmentUpdateFailed"));
         return;
       }
 
@@ -948,7 +930,7 @@ export function MessageThread({
     );
   }
 
-  const displayName = contact.name || contact.phone;
+  const displayName = contact.name || contactHandle(contact);
   const messageGroups = groupMessagesByDate(messages);
   const currentStatus = STATUS_OPTIONS.find(
     (s) => s.value === conversation.status
@@ -990,7 +972,9 @@ export function MessageThread({
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold text-foreground">{displayName}</h2>
-            <p className="truncate text-xs text-muted-foreground">{contact.phone}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {contactHandle(contact)}
+            </p>
           </div>
           {/* Session timer badge — hidden on the narrowest phones so
               the name + back arrow keep their room. */}
@@ -1062,7 +1046,7 @@ export function MessageThread({
                   "inline-flex items-center justify-center h-7 gap-1 px-2 text-xs rounded-md hover:bg-muted",
                   currentStatus?.color ?? "text-muted-foreground"
                 )}>
-                {currentStatus ? t(currentStatus.labelKey) : t("status")}
+                {currentStatus ? t(`status${currentStatus.label}`) : t("status")}
                 <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -1075,7 +1059,7 @@ export function MessageThread({
                   onClick={() => handleStatusChange(opt.value)}
                   className={cn("text-sm", opt.color)}
                 >
-                  {t(opt.labelKey)}
+                  {t(`status${opt.label}`)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -1208,7 +1192,7 @@ export function MessageThread({
                 {/* Date separator */}
                 <div className="mb-4 flex items-center justify-center">
                   <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-medium text-muted-foreground">
-                    {formatDateSeparator(group.date, t, locale)}
+                    {formatDateSeparator(group.date, t)}
                   </span>
                 </div>
                 {/* Messages */}
@@ -1222,7 +1206,7 @@ export function MessageThread({
                           authorLabel:
                             parent.sender_type === "agent" || parent.sender_type === "bot"
                               ? t("me") 
-                              : contact?.name || contact?.phone || t("labels.unknown"),
+                              : contact?.name || contact?.phone || t("unknown"),
                           preview: buildReplyPreview(parent, tQuote),
                         }
                       : null;

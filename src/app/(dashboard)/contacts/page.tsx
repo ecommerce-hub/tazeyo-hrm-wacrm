@@ -67,7 +67,6 @@ interface ContactWithTags extends Contact {
 
 export default function ContactsPage() {
   const t = useTranslations('Contacts.page');
-  const tA11y = useTranslations('Common.a11y');
   const intlLocale = useIntlLocale();
   const supabase = createClient();
   const canEdit = useCan('send-messages');
@@ -448,7 +447,7 @@ export default function ContactsPage() {
                       <Checkbox
                         checked={selectedTagIds.includes(tag.id)}
                         onCheckedChange={() => toggleTagFilter(tag.id)}
-                        aria-label={tA11y('filterByTag', { name: tag.name })}
+                        aria-label={`Filter by ${tag.name}`}
                       />
                       <span
                         className="size-2.5 shrink-0 rounded-full"
@@ -483,7 +482,7 @@ export default function ContactsPage() {
                   {tag.name}
                   <button
                     onClick={() => toggleTagFilter(id)}
-                    aria-label={tA11y('removeTagFilter', { name: tag.name })}
+                    aria-label={`Remove ${tag.name} filter`}
                     className="hover:opacity-70"
                   >
                     <X className="size-3" />
@@ -541,7 +540,7 @@ export default function ContactsPage() {
                   indeterminate={!allOnPageSelected && someOnPageSelected}
                   onCheckedChange={toggleSelectAll}
                   disabled={contacts.length === 0}
-                  aria-label={tA11y('selectAllContactsOnPage')}
+                  aria-label={t('selectAllOnPage')}
                 />
               </TableHead>
               <TableHead className="text-muted-foreground">{t('tableColumns.name')}</TableHead>
@@ -600,9 +599,7 @@ export default function ContactsPage() {
                     <Checkbox
                       checked={selected.has(contact.id)}
                       onCheckedChange={() => toggleSelect(contact.id)}
-                      aria-label={tA11y('selectContact', {
-                        name: contact.name || contact.phone,
-                      })}
+                      aria-label={`Select ${contact.name || contact.phone}`}
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">

@@ -125,9 +125,7 @@ export function Step4ScheduleSend({
             <p className="text-foreground">{audienceLabel}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">
-              {t('scheduleSend.estimatedReach')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('scheduleSend.estimatedReach')}</p>
             <div className="flex items-center gap-1.5">
               {loadingReach ? (
                 <Loader2 className="h-3 w-3 animate-spin text-primary" />
@@ -140,9 +138,7 @@ export function Step4ScheduleSend({
             </div>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">
-              {t('scheduleSend.language')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('scheduleSend.language')}</p>
             <p className="text-foreground">{template.language ?? 'en_US'}</p>
           </div>
         </div>
@@ -205,17 +201,13 @@ export function Step4ScheduleSend({
           </DialogTrigger>
           <DialogContent className="border-border bg-popover sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-popover-foreground">
-                {t('scheduleSend.confirmTitle')}
-              </DialogTitle>
+              <DialogTitle className="text-popover-foreground">{t('scheduleSend.confirmTitle')}</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                {t.rich('scheduleSend.confirmDescription', {
+                {t.rich('scheduleSend.confirmDesc', {
                   count: estimatedReach,
                   template: template.name,
                   b: (chunks) => (
-                    <span className="font-medium text-popover-foreground">
-                      {chunks}
-                    </span>
+                    <span className="font-medium text-popover-foreground">{chunks}</span>
                   ),
                 })}
               </DialogDescription>

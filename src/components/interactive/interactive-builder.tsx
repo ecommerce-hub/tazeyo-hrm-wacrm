@@ -104,20 +104,17 @@ export function InteractiveBuilder({
           <div className="flex gap-2">
             <KindButton
               active={value.kind === "buttons"}
-              label={t("kindButtons")}
+              label={t("replyButtons")}
               onClick={() => switchKind("buttons")}
             />
             <KindButton
               active={value.kind === "list"}
-              label={t("kindList")}
+              label={t("list")}
               onClick={() => switchKind("list")}
             />
           </div>
 
-          <Field
-            label={t("body")}
-            counter={`${value.body.length}/${INTERACTIVE_LIMITS.bodyMaxLength}`}
-          >
+          <Field label={t("body")} counter={`${value.body.length}/${INTERACTIVE_LIMITS.bodyMaxLength}`}>
             <Textarea
               value={value.body}
               maxLength={INTERACTIVE_LIMITS.bodyMaxLength}
@@ -165,15 +162,11 @@ export function InteractiveBuilder({
               onChange={(e) => setAdvanced(e.target.checked)}
               className="h-3.5 w-3.5 accent-primary"
             />
-            {t("showReplyIds")}
+            {t("showIds")}
           </label>
 
           {!validation.ok && (
-            <p className="text-xs text-red-400">
-              {/* The validator is shared with server paths, so it returns a
-                  code + params rather than prose — localise it here. */}
-              {t(`validation.${validation.code}`, validation.params)}
-            </p>
+            <p className="text-xs text-red-400">{validation.error}</p>
           )}
         </div>
 
@@ -183,7 +176,14 @@ export function InteractiveBuilder({
               {t("preview")}
             </span>
             <div className="rounded-lg bg-muted/40 p-3">
-              <InteractivePreview payload={value} />
+              <InteractivePreview
+                payload={value}
+                labels={{
+                  body: t("previewBody"),
+                  button: t("previewButton"),
+                  menu: t("previewMenu"),
+                }}
+              />
             </div>
           </div>
         )}
@@ -226,10 +226,7 @@ function ButtonsEditor({
   return (
     <div>
       <label className="mb-2 block text-xs text-muted-foreground">
-        {t("buttonsCount", {
-          count: buttons.length,
-          max: INTERACTIVE_LIMITS.maxButtons,
-        })}
+        {t("buttonsCount", { count: buttons.length, max: INTERACTIVE_LIMITS.maxButtons })}
       </label>
       <div className="flex flex-col gap-2">
         {buttons.map((b, i) => (
@@ -241,7 +238,7 @@ function ButtonsEditor({
               <Input
                 value={b.id}
                 onChange={(e) => update(i, { id: slugify(e.target.value, `btn_${i + 1}`) })}
-                placeholder="id"
+                placeholder={t("idPlaceholder")}
                 className="w-28 bg-muted font-mono text-xs"
               />
             )}
@@ -249,7 +246,7 @@ function ButtonsEditor({
               value={b.title}
               maxLength={INTERACTIVE_LIMITS.buttonTitleMaxLength}
               onChange={(e) => update(i, { title: e.target.value })}
-              placeholder={t("buttonTitlePlaceholder")}
+              placeholder={t("buttonLabelPlaceholder")}
               className="flex-1 bg-muted"
             />
             <span className="w-10 shrink-0 text-right text-[10px] text-muted-foreground">
@@ -343,10 +340,7 @@ function ListEditor({
 
   return (
     <div className="flex flex-col gap-3">
-      <Field
-        label={t("listButtonLabel")}
-        counter={`${value.button_label.length}/${INTERACTIVE_LIMITS.buttonTitleMaxLength}`}
-      >
+      <Field label={t("listButtonLabel")} counter={`${value.button_label.length}/${INTERACTIVE_LIMITS.buttonTitleMaxLength}`}>
         <Input
           value={value.button_label}
           maxLength={INTERACTIVE_LIMITS.buttonTitleMaxLength}
@@ -356,10 +350,7 @@ function ListEditor({
       </Field>
 
       <label className="block text-xs text-muted-foreground">
-        {t("rowsCount", {
-          count: totalRows,
-          max: INTERACTIVE_LIMITS.maxListRowsTotal,
-        })}
+        {t("rowsCount", { count: totalRows, max: INTERACTIVE_LIMITS.maxListRowsTotal })}
       </label>
 
       {sections.map((section, sIdx) => (
@@ -392,7 +383,7 @@ function ListEditor({
                       onChange={(e) =>
                         updateRow(sIdx, rIdx, { id: slugify(e.target.value, `row_${rIdx + 1}`) })
                       }
-                      placeholder="id"
+                      placeholder={t("idPlaceholder")}
                       className="w-24 bg-muted font-mono text-xs"
                     />
                   )}

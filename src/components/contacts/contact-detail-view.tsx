@@ -41,7 +41,7 @@ import {
   LayoutTemplate,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useIntlLocale } from '@/lib/i18n/date';
+import { contactHandle } from '@/lib/whatsapp/wa-identity';
 
 interface ContactDetailViewProps {
   open: boolean;
@@ -57,8 +57,6 @@ export function ContactDetailView({
   onUpdated,
 }: ContactDetailViewProps) {
   const t = useTranslations('Contacts.detailView');
-  const tToast = useTranslations('Contacts.toasts');
-  const intlLocale = useIntlLocale();
   const supabase = createClient();
   const { accountId, defaultCurrency } = useAuth();
 
@@ -195,7 +193,7 @@ export function ContactDetailView({
 
   async function copyPhone() {
     if (!contact) return;
-    await navigator.clipboard.writeText(contact.phone);
+    await navigator.clipboard.writeText(contactHandle(contact));
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
   }
@@ -362,8 +360,8 @@ export function ContactDetailView({
 
       toast.success(t('toastTemplateSent', { name: template.name }));
     } catch (err) {
-      const reason = err instanceof Error ? err.message : tToast('networkError');
-      toast.error(tToast('templateFailed', { reason }));
+      const reason = err instanceof Error ? err.message : 'network error';
+      toast.error(`Failed to send template: ${reason}`);
     } finally {
       setSendingTemplate(false);
     }
@@ -413,7 +411,7 @@ export function ContactDetailView({
                       className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
                     >
                       <Phone className="size-3" />
-                      {contact.phone}
+                      {contactHandle(contact)}
                       {copiedPhone ? (
                         <Check className="size-3 text-primary" />
                       ) : (
@@ -630,7 +628,7 @@ export function ContactDetailView({
                           </button>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          {new Date(note.created_at).toLocaleDateString(intlLocale, {
+                          {new Date(note.created_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',

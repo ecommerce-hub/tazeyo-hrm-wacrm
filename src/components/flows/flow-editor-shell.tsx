@@ -61,7 +61,6 @@ interface Props {
 
 export function FlowEditorShell({ initialFlow, initialNodes }: Props) {
   const t = useTranslations("Flows.builder");
-  const tEditor = useTranslations("Flows.editor");
 
   // Read the persisted choice in the useState initializer. Safe even
   // though this is a client component because the parent page only
@@ -107,7 +106,7 @@ export function FlowEditorShell({ initialFlow, initialNodes }: Props) {
           <div className="flex items-center gap-4 px-6 py-3.5">
             <div
               role="group"
-              aria-label={tEditor("viewLabel")}
+              aria-label={t("editorView")}
               className="inline-flex gap-0.5 rounded-lg border border-border bg-muted p-0.5"
             >
               <SegButton

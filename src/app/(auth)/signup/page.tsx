@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle, UsersRound } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { TazeyoMark } from "@/components/brand/tazeyo-mark";
 
 // `useSearchParams` opts the component out of static prerendering
@@ -29,7 +29,6 @@ export default function SignupPage() {
 }
 
 function SignupPageInner() {
-  const t = useTranslations("SignupPage");
   const searchParams = useSearchParams();
   // When the user lands here from `/join/<token>` we carry the
   // invite token in the query so it survives the signup → email
@@ -37,6 +36,7 @@ function SignupPageInner() {
   // points back at /join/<token> so the user lands on the redeem
   // step after verifying instead of being dropped on /dashboard.
   const inviteToken = searchParams.get("invite");
+  const t = useTranslations("SignupPage");
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -52,12 +52,12 @@ function SignupPageInner() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError(t("errorPasswordMismatch"));
+      setError(t("passwordsMismatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError(t("errorPasswordTooShort"));
+      setError(t("passwordTooShort"));
       return;
     }
 
@@ -101,12 +101,12 @@ function SignupPageInner() {
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-xl text-foreground">
-              {t("successTitle")}
+              {t("checkEmailTitle")}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {t.rich("successDesc", {
+              {t.rich("checkEmailDesc", {
                 email,
-                highlight: (chunks) => (
+                strong: (chunks) => (
                   <span className="text-foreground">{chunks}</span>
                 ),
               })}
@@ -224,7 +224,7 @@ function SignupPageInner() {
               disabled={loading}
               className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? t("submitting") : t("submit")}
+              {loading ? t("creating") : t("submit")}
             </Button>
           </form>
 

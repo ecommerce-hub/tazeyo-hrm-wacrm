@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { BarChart3, Bot, PencilLine } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { canEditSettings } from '@/lib/auth/roles';
@@ -23,7 +23,6 @@ import {
 import { Skeleton } from '@/components/dashboard/skeleton';
 import { BarChart } from '@/components/tremor/bar-chart';
 import { formatCompactNumber } from '@/lib/currency';
-import { useDateFnsLocale } from '@/lib/i18n/date';
 import { format, parseISO } from 'date-fns';
 
 interface UsageResponse {
@@ -57,7 +56,6 @@ const WINDOWS = [7, 30, 90] as const;
  */
 export function AiUsageCard() {
   const t = useTranslations('Agents.usage');
-  const locale = useDateFnsLocale();
   const { accountId, accountRole, profileLoading } = useAuth();
   const canView = accountRole ? canEditSettings(accountRole) : false;
 
@@ -66,29 +64,26 @@ export function AiUsageCard() {
   const [data, setData] = useState<UsageResponse | null>(null);
   const loadedRef = useRef<string | null>(null);
 
-  const fetchUsage = useCallback(
-    async (windowDays: number) => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/ai/usage?days=${windowDays}`, {
-          cache: 'no-store',
-        });
-        const json = await res.json().catch(() => null);
-        if (!res.ok) {
-          toast.error(json?.error ?? t('loadFailed'));
-          setData(null);
-          return;
-        }
-        setData(json as UsageResponse);
-      } catch {
-        toast.error(t('loadFailed'));
+  const fetchUsage = useCallback(async (windowDays: number) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/ai/usage?days=${windowDays}`, {
+        cache: 'no-store',
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast.error(json?.error ?? t('loadFailed'));
         setData(null);
-      } finally {
-        setLoading(false);
+        return;
       }
-    },
-    [t],
-  );
+      setData(json as UsageResponse);
+    } catch {
+      toast.error(t('loadFailed'));
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
     if (!canView || !accountId) return;
@@ -101,12 +96,12 @@ export function AiUsageCard() {
 
   if (profileLoading || !canView) return null;
 
-  // The chart's series name doubles as the data key, so it has to be the
-  // translated label — the tooltip renders it verbatim.
-  const tokensLabel = t('chartSeriesTokens');
+  // The category label doubles as the data key so the chart tooltip
+  // shows the translated series name.
+  const tokensLabel = t('tokens');
   const chartData =
     data?.daily.map((d) => ({
-      day: format(parseISO(d.date), 'MMM d', { locale }),
+      day: format(parseISO(d.date), 'MMM d'),
       [tokensLabel]: d.tokens,
     })) ?? [];
   const hasSpend = (data?.totals.total_tokens ?? 0) > 0;
@@ -119,7 +114,9 @@ export function AiUsageCard() {
             <CardTitle className="flex items-center gap-2 text-base">
               <BarChart3 className="h-4 w-4 text-primary" /> {t('title')}
             </CardTitle>
-            <CardDescription>{t('description')}</CardDescription>
+            <CardDescription>
+              {t('description')}
+            </CardDescription>
           </div>
           <Select
             value={String(days)}
@@ -131,7 +128,7 @@ export function AiUsageCard() {
             <SelectContent>
               {WINDOWS.map((w) => (
                 <SelectItem key={w} value={String(w)}>
-                  {t('windowLastDays', { count: w })}
+                  {t('window', { days: w })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -144,27 +141,23 @@ export function AiUsageCard() {
         ) : !hasSpend ? (
           <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-sm text-muted-foreground">
             <BarChart3 className="h-8 w-8 opacity-40" />
-            <p>{t('emptyTitle', { count: data.window_days })}</p>
-            <p className="text-xs">{t('emptyBody')}</p>
+            <p>{t('empty', { days: data.window_days })}</p>
+            <p className="text-xs">
+              {t('emptyHint')}
+            </p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Stat label={t('totalTokens')} value={formatCompactNumber(data.totals.total_tokens)} />
+              <Stat label={t('llmCalls')} value={String(data.totals.calls)} />
               <Stat
-                label={t('statTotalTokens')}
-                value={formatCompactNumber(data.totals.total_tokens)}
-              />
-              <Stat
-                label={t('statCalls')}
-                value={String(data.totals.calls)}
-              />
-              <Stat
-                label={t('statAutoReply')}
+                label={t('autoReply')}
                 value={formatCompactNumber(data.by_mode.auto_reply.tokens)}
                 icon={Bot}
               />
               <Stat
-                label={t('statDrafts')}
+                label={t('drafts')}
                 value={formatCompactNumber(data.by_mode.draft.tokens)}
                 icon={PencilLine}
               />
@@ -204,7 +197,7 @@ export function AiUsageCard() {
                         </span>
                       </span>
                       <span className="flex-shrink-0 tabular-nums text-muted-foreground">
-                        {t('modelUsage', {
+                        {t('modelCalls', {
                           tokens: formatCompactNumber(m.tokens),
                           count: m.calls,
                         })}
@@ -216,7 +209,9 @@ export function AiUsageCard() {
             )}
 
             {data.truncated && (
-              <p className="text-xs text-muted-foreground">{t('truncated')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('partialWindow')}
+              </p>
             )}
           </>
         )}

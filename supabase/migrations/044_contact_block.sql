@@ -1,4 +1,5 @@
--- Migration 042: Add number blocking to contacts.
+-- Migration 044 (renumbered from this fork's 042 to clear the collision
+-- with upstream's 042_message_failure_reason): Add number blocking to contacts.
 --
 -- A blocked contact's messages are still received and stored (nothing
 -- is lost), but their conversation is parked in the archive: blocking
@@ -8,7 +9,7 @@
 -- skipped so the bot never responds to a blocked number.
 
 ALTER TABLE contacts
-  ADD COLUMN is_blocked BOOLEAN NOT NULL DEFAULT FALSE;
+  ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Blocking archives the contact's conversations atomically, DB-side.
 -- The inbox UI performs the same pair of writes for instant feedback,
@@ -26,6 +27,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS trg_archive_conversations_on_block ON contacts;
 CREATE TRIGGER trg_archive_conversations_on_block
   AFTER UPDATE OF is_blocked ON contacts
   FOR EACH ROW

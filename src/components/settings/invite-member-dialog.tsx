@@ -76,7 +76,6 @@ export function InviteMemberDialog({
 }: InviteMemberDialogProps) {
   const t = useTranslations('Settings.invite');
   const tRoles = useTranslations('Settings.roles');
-  const tToast = useTranslations('Settings.invite.toasts');
   const { account } = useAuth();
   const [role, setRole] = useState<InviteRole>('agent');
   const [expiry, setExpiry] = useState<string>('7');
@@ -118,7 +117,7 @@ export function InviteMemberDialog({
 
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
-        toast.error(payload.error || tToast('createFailed'));
+        toast.error(payload.error || 'Failed to create invitation');
         return;
       }
 
@@ -136,12 +135,12 @@ export function InviteMemberDialog({
         // string if `account` hasn't loaded yet (shouldn't happen
         // — the dialog requires admin+ which requires a loaded
         // profile — but stay safe).
-        accountName: account?.name ?? t('accountNameFallback'),
+        accountName: account?.name ?? t('fallbackAccountName'),
       });
       onCreated();
     } catch (err) {
       console.error('[InviteMemberDialog] create error:', err);
-      toast.error(tToast('networkError'));
+      toast.error(t('networkError'));
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +164,7 @@ export function InviteMemberDialog({
     // they're being invited to before clicking through. This matters
     // for users in multi-team contexts where the generic fallback
     // wouldn't be enough to disambiguate.
-    const accountName = result?.accountName ?? t('accountNameFallback');
+    const accountName = result?.accountName ?? t('fallbackAccountName');
     const message = t('whatsappMessage', { accountName, expiresInDays: result?.expiresInDays ?? 0, url });
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }

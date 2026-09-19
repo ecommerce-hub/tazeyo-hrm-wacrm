@@ -344,7 +344,7 @@ export function Step3Personalize({
                         onChange={(e) =>
                           updateVariable(key, { value: e.target.value })
                         }
-                        placeholder={t('personalize.staticValuePlaceholder')}
+                        placeholder={t('personalize.enterValue')}
                         className="border-border bg-muted text-foreground placeholder:text-muted-foreground"
                       />
                     ) : mapping.type === 'field' ? (
@@ -423,10 +423,8 @@ export function Step3Personalize({
       {unmappedKeys.length > 0 && (
         <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
           {t.rich('personalize.unmappedWarning', {
-            list: unmappedKeys.join(', '),
-            keys: (chunks) => (
-              <span className="font-mono font-semibold">{chunks}</span>
-            ),
+            keys: unmappedKeys.join(', '),
+            mono: (chunks) => <span className="font-mono font-semibold">{chunks}</span>,
           })}
         </div>
       )}

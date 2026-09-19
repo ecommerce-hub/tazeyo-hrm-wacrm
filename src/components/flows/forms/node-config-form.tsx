@@ -84,6 +84,7 @@ export function NodeConfigForm({
             label={t("textToCustomer")}
             value={(cfg as { text?: string }).text ?? ""}
             onChange={(v) => onUpdateConfig({ text: v })}
+            rows={3}
           />
           <NextNodeRow
             value={(cfg as { next_node_key?: string }).next_node_key ?? ""}
@@ -254,7 +255,7 @@ function SendButtonsForm({
         ...buttons,
         {
           reply_id: `btn_${buttons.length + 1}`,
-          title: "Option",
+          title: t("defaultOptionTitle"),
           next_node_key: "",
         },
       ],
@@ -379,7 +380,6 @@ function SendListForm({
   showAdvanced: boolean;
   t: ReturnType<typeof useTranslations>;
 }) {
-  const tEditor = useTranslations("Flows.editor");
   const sections = cfg.sections ?? [];
   const totalRows = sections.reduce((sum, s) => sum + s.rows.length, 0);
 
@@ -499,7 +499,7 @@ function SendListForm({
                   size="sm"
                   onClick={() => removeSection(sIdx)}
                   className="shrink-0 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                  aria-label={tEditor("removeSection")}
+                  aria-label={t("removeSection")}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -901,7 +901,6 @@ function SendMediaForm({
   onUpdateConfig: (patch: Record<string, unknown>) => void;
   t: ReturnType<typeof useTranslations>;
 }) {
-  const tEditor = useTranslations("Flows.editor");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -915,10 +914,7 @@ function SendMediaForm({
     async (file: File) => {
       if (file.size > MEDIA_MAX_BYTES) {
         toast.error(
-          tEditor("fileTooLarge", {
-            size: (file.size / 1024 / 1024).toFixed(1),
-            limit: String(Math.round(MEDIA_MAX_BYTES / 1024 / 1024)),
-          }),
+          t("fileTooLarge", { size: (file.size / 1024 / 1024).toFixed(1) }),
         );
         return;
       }
@@ -933,15 +929,15 @@ function SendMediaForm({
           media_url: publicUrl,
           filename: file.name,
         });
-        toast.success(tEditor("fileUploaded"));
+        toast.success(t("fileUploaded"));
       } catch (err) {
-        const msg = err instanceof Error ? err.message : tEditor("uploadFailed");
+        const msg = err instanceof Error ? err.message : t("uploadFailed");
         toast.error(msg);
       } finally {
         setUploading(false);
       }
     },
-    [onUpdateConfig, tEditor],
+    [onUpdateConfig, t],
   );
 
   const handleClear = () => {

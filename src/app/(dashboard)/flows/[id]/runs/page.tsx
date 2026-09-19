@@ -61,39 +61,31 @@ interface EventRow {
   created_at: string;
 }
 
-// The enum keys are the DB values and stay as-is; `labelKey` points at
-// the chip copy in the Flows.logs catalogue so the map holds no English.
 const STATUS_META: Record<
   RunRow["status"],
-  { labelKey: string; classes: string; icon: typeof Clock }
+  { classes: string; icon: typeof Clock }
 > = {
   active: {
-    labelKey: "statusActive",
     classes: "border-emerald-600/40 bg-emerald-500/10 text-emerald-300",
     icon: PlayCircle,
   },
   completed: {
-    labelKey: "statusCompleted",
     classes: "border-border bg-muted text-muted-foreground",
     icon: CircleCheck,
   },
   handed_off: {
-    labelKey: "statusHandedOff",
     classes: "border-amber-600/40 bg-amber-500/10 text-amber-300",
     icon: UserPlus,
   },
   timed_out: {
-    labelKey: "statusTimedOut",
     classes: "border-border bg-muted/60 text-muted-foreground",
     icon: Clock,
   },
   paused_by_agent: {
-    labelKey: "statusPaused",
     classes: "border-border bg-muted text-muted-foreground",
     icon: PauseCircle,
   },
   failed: {
-    labelKey: "statusFailed",
     classes: "border-red-600/40 bg-red-500/10 text-red-300",
     icon: CircleAlert,
   },
@@ -104,7 +96,6 @@ export default function FlowRunsPage() {
   const params = useParams<{ id: string }>();
   const t = useTranslations("Flows.logs");
   const tEdit = useTranslations("Flows.edit");
-  const tToast = useTranslations("Flows.toasts");
 
   const [flow, setFlow] = useState<{ id: string; name: string } | null>(null);
   const [runs, setRuns] = useState<RunRow[]>([]);
@@ -123,9 +114,7 @@ export default function FlowRunsPage() {
           if (!cancelled) setNotFound(true);
           return;
         }
-        if (!res.ok) {
-          throw new Error(tToast("requestFailed", { status: res.status }));
-        }
+        if (!res.ok) throw new Error(`Failed: ${res.status}`);
         const json = (await res.json()) as {
           flow: { id: string; name: string };
           runs: RunRow[];
@@ -261,7 +250,19 @@ function RunCard({
             </span>
             <Badge variant="outline" className={cn("gap-1", meta.classes)}>
               <StatusIcon className="h-3 w-3" />
-              {t(meta.labelKey)}
+              {t(
+                run.status === "active"
+                  ? "statusActive"
+                  : run.status === "completed"
+                  ? "statusCompleted"
+                  : run.status === "handed_off"
+                  ? "statusHandedOff"
+                  : run.status === "timed_out"
+                  ? "statusTimedOut"
+                  : run.status === "paused_by_agent"
+                  ? "statusPaused"
+                  : "statusFailed"
+              )}
             </Badge>
             {run.status === "active" && run.current_node_key && (
               <code className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">

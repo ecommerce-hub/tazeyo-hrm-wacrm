@@ -23,6 +23,7 @@
  */
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   CircleDot,
@@ -34,8 +35,6 @@ import {
   Trash2,
   Workflow,
 } from "lucide-react";
-
-import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -81,14 +80,14 @@ export function EditorHeader() {
           onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
           placeholder={t("namePlaceholder")}
           spellCheck={false}
-          aria-label={t("nameLabel")}
+          aria-label={t("namePlaceholder")}
           className="min-w-[120px] max-w-[340px] rounded-lg border border-transparent bg-transparent px-2 py-1 text-lg font-bold leading-tight tracking-tight text-foreground outline-none transition-colors hover:bg-muted focus:border-primary focus:bg-transparent focus:shadow-[0_0_0_3px_var(--primary-soft)]"
         />
         <StatusChip status={state.status} />
         {dirty && (
           <span
             className="inline-flex shrink-0 items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-amber-300"
-            title={t("unsavedChanges")}
+            title={t("unsavedHint")}
             aria-live="polite"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
@@ -139,7 +138,7 @@ export function EditorHeader() {
               onClick={() => void setStatus("active")}
               disabled={activating || !canActivate}
               title={
-                !canActivate ? t("activateBlocked") : undefined
+                !canActivate ? t("fixIssues") : undefined
               }
             >
               {activating ? (
@@ -176,7 +175,9 @@ export function EditorHeader() {
 }
 
 function StatusChip({ status }: { status: BuilderState["status"] }) {
-  const t = useTranslations("Flows.header");
+  // Status labels live with the flows list so the chip and the list
+  // badge can never drift apart.
+  const t = useTranslations("Flows.list");
   const cfg = {
     draft: {
       // Neutral, not amber — amber is reserved for the adjacent

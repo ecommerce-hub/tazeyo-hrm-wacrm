@@ -13,7 +13,7 @@ import { canEditSettings } from '@/lib/auth/roles';
 type Tab = 'playground' | 'setup' | 'usage';
 
 export default function AgentsPage() {
-  const t = useTranslations('Agents.page');
+  const t = useTranslations('Agents');
   const { accountRole } = useAuth();
   const canViewUsage = accountRole ? canEditSettings(accountRole) : false;
   const [tab, setTab] = useState<Tab>('playground');
@@ -46,7 +46,9 @@ export default function AgentsPage() {
           {t('title')}
         </h1>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t('description')}
+      </p>
 
       {decided && (
         <Tabs

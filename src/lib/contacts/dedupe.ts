@@ -21,9 +21,8 @@ export function normalizeKey(phone: string): string {
 /** Minimal shape we need back from a contacts lookup. */
 export interface ExistingContact {
   id: string;
-  phone: string | null;
+  phone: string;
   name?: string | null;
-  bsuid?: string | null;
   [key: string]: unknown;
 }
 
@@ -52,30 +51,8 @@ export async function findExistingContact(
   if (error || !data) return null;
 
   return (
-    (data as ExistingContact[]).find((c) => phonesMatch(c.phone ?? '', phone)) ?? null
+    (data as ExistingContact[]).find((c) => phonesMatch(c.phone, phone)) ?? null
   );
-}
-
-/**
- * Find an existing contact in `accountId` whose BSUID matches `bsuid`,
- * or null. Direct equality — BSUIDs are opaque, case-sensitive strings.
- */
-export async function findExistingContactByBsuid(
-  db: SupabaseClient,
-  accountId: string,
-  bsuid: string,
-): Promise<ExistingContact | null> {
-  if (!bsuid) return null;
-
-  const { data, error } = await db
-    .from("contacts")
-    .select("*")
-    .eq("account_id", accountId)
-    .eq("bsuid", bsuid)
-    .maybeSingle();
-
-  if (error || !data) return null;
-  return data as ExistingContact;
 }
 
 /**
@@ -84,7 +61,7 @@ export async function findExistingContactByBsuid(
  * exact matches but only warns on fuzzy ones.
  */
 export function isExactMatch(existing: ExistingContact, phone: string): boolean {
-  return normalizeKey(existing.phone ?? '') === normalizeKey(phone);
+  return normalizeKey(existing.phone) === normalizeKey(phone);
 }
 
 /**
@@ -99,21 +76,25 @@ export function isUniqueViolation(error: unknown): boolean {
 
 /**
  * De-duplicate parsed CSV rows by normalized phone, keeping the first
- * occurrence of each. Rows with an empty normalized phone are dropped
- * (they can't be a valid contact). Returns the unique rows plus the
- * count removed as in-file duplicates.
+ * occurrence of each. Rows with an empty normalized phone can't be a
+ * valid contact and are dropped too, but counted separately as
+ * `invalid` rather than folded into `duplicates` — they never
+ * duplicated anything, and the import result should say so instead of
+ * telling the user a contact with a real, unique number was skipped
+ * as a dupe.
  */
 export function dedupeByPhone<T extends { phone: string }>(
   rows: T[],
-): { unique: T[]; duplicates: number } {
+): { unique: T[]; duplicates: number; invalid: number } {
   const seen = new Set<string>();
   const unique: T[] = [];
   let duplicates = 0;
+  let invalid = 0;
 
   for (const row of rows) {
     const key = normalizeKey(row.phone);
     if (!key) {
-      duplicates++;
+      invalid++;
       continue;
     }
     if (seen.has(key)) {
@@ -124,5 +105,5 @@ export function dedupeByPhone<T extends { phone: string }>(
     unique.push(row);
   }
 
-  return { unique, duplicates };
+  return { unique, duplicates, invalid };
 }

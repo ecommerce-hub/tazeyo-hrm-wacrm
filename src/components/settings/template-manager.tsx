@@ -18,6 +18,11 @@ import {
   uploadAccountMedia,
   MEDIA_MAX_BYTES_BY_KIND,
 } from '@/lib/storage/upload-media';
+import {
+  MEDIA_HEADER_SPECS,
+  isMediaHeaderKind,
+  type MediaHeaderKind,
+} from '@/lib/whatsapp/media-header-types';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +52,7 @@ import type {
   TemplateButton,
   TemplateSampleValues,
 } from '@/types';
-import { templateStatusConfig, templateStatusLabel } from '@/lib/template-status';
+import { templateStatusConfig } from '@/lib/template-status';
 import {
   extractVariableIndices,
   TEMPLATE_LIMITS,
@@ -145,9 +150,10 @@ export function TemplateManager() {
   // doesn't take the template off Meta as well as locally.
   const [templateToDelete, setTemplateToDelete] =
     useState<MessageTemplate | null>(null);
-  // Header-image upload (issue #230). Uploads to the account-scoped
-  // chat-media bucket and stores the public URL in header_media_url; the
-  // submit route turns that into a Meta Resumable-Upload handle.
+  // Header-media upload (image #230; video/document #562). Uploads to the
+  // account-scoped chat-media bucket and stores the public URL in
+  // header_media_url; the submit route turns that into a Meta
+  // Resumable-Upload handle.
   const [uploadingHeader, setUploadingHeader] = useState(false);
   const headerFileRef = useRef<HTMLInputElement>(null);
 
@@ -275,10 +281,7 @@ export function TemplateManager() {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(
-          data?.error ||
-            (isEdit
-              ? t('toasts.editFailedHttp', { status: res.status })
-              : t('toasts.submitFailedHttp', { status: res.status })),
+          data?.error || t(isEdit ? 'editFailedHttp' : 'submitFailedHttp', { status: res.status }),
         );
       }
       // Refresh first, then close — re-opening the dialog
@@ -311,9 +314,7 @@ export function TemplateManager() {
       const res = await fetch('/api/whatsapp/templates/sync', { method: 'POST' });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(
-          data?.error || t('toasts.syncFailedHttp', { status: res.status }),
-        );
+        throw new Error(data?.error || `Sync failed (HTTP ${res.status})`);
       }
       toast.success(
         t('toastSyncCount', { total: data.total }) +
@@ -327,9 +328,7 @@ export function TemplateManager() {
             `${e.name} (${e.language})`,
         );
         const suffix =
-          data.errors.length > 3
-            ? t('toasts.andMore', { count: data.errors.length - 3 })
-            : '';
+          data.errors.length > 3 ? `, +${data.errors.length - 3} more` : '';
         toast.error(t('toastSyncFailed', { preview: preview.join(', ') + suffix }));
       }
       if (data.truncated) {
@@ -363,9 +362,7 @@ export function TemplateManager() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(
-          data?.error || t('toasts.deleteFailedHttp', { status: res.status }),
-        );
+        throw new Error(data?.error || `Delete failed (HTTP ${res.status})`);
       }
       toast.success(t('toastDeleteSuccess'));
       setTemplates((prev) => prev.filter((t) => t.id !== target.id));
@@ -466,15 +463,45 @@ export function TemplateManager() {
 
   const headerNeedsMedia =
     form.header_format !== 'none' && form.header_format !== 'text';
+  const headerMediaKind: MediaHeaderKind | null = isMediaHeaderKind(
+    form.header_format,
+  )
+    ? form.header_format
+    : null;
 
-  async function handleHeaderImageFile(file: File) {
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      toast.error(t('toastInvalidImage'));
+  // Per-kind copy for the file picker. Kept as explicit key maps (not
+  // `t(\`upload${kind}\`)`) so the catalogue scanner can see every key.
+  const uploadLabelKey = {
+    image: 'uploadImage',
+    video: 'uploadVideo',
+    document: 'uploadDocument',
+  } as const;
+  const uploadHintKey = {
+    image: 'uploadHint',
+    video: 'uploadHintVideo',
+    document: 'uploadHintDocument',
+  } as const;
+  const invalidTypeKey = {
+    image: 'toastInvalidImage',
+    video: 'toastInvalidVideo',
+    document: 'toastInvalidDocument',
+  } as const;
+
+  async function handleHeaderMediaFile(file: File, kind: MediaHeaderKind) {
+    if (!MEDIA_HEADER_SPECS[kind].mimeTypes.includes(file.type)) {
+      toast.error(t(invalidTypeKey[kind]));
       return;
     }
-    if (file.size > MEDIA_MAX_BYTES_BY_KIND.image) {
+    // The upload lands in the chat-media bucket, whose 16 MB ceiling is
+    // below Meta's 100 MB document cap — so this is the bucket-side
+    // limit, not Meta's. A larger document can still be pasted as a link.
+    const maxBytes = MEDIA_MAX_BYTES_BY_KIND[kind];
+    if (file.size > maxBytes) {
       toast.error(
-        t('toastImageTooLarge', { size: (file.size / 1024 / 1024).toFixed(1) }),
+        t('toastMediaTooLarge', {
+          size: (file.size / 1024 / 1024).toFixed(1),
+          max: Math.round(maxBytes / 1024 / 1024),
+        }),
       );
       return;
     }
@@ -540,7 +567,7 @@ export function TemplateManager() {
                         {template.category}
                       </Badge>
                       <Badge className={`text-xs border ${status.classes}`}>
-                        {templateStatusLabel(statusKey, t)}
+                        {t(status.labelKey)}
                       </Badge>
                       {template.language && (
                         <span className="text-xs text-muted-foreground uppercase">
@@ -556,7 +583,7 @@ export function TemplateManager() {
                                 ? 'text-yellow-400'
                                 : 'text-red-400'
                           }`}
-                          title={t('a11y.metaQualityScore')}
+                          title={t('qualityScoreTitle')}
                         >
                           {template.quality_score}
                         </span>
@@ -784,7 +811,7 @@ export function TemplateManager() {
                 <div className="space-y-2 mt-2">
                   <Input
                     id="template-header-text"
-                    aria-label={t('a11y.headerText')}
+                    aria-label={t('headerTextLabel')}
                     placeholder={t.raw('headerTextPlaceholder')}
                     value={form.header_content}
                     onChange={(e) =>
@@ -810,16 +837,16 @@ export function TemplateManager() {
 
               {headerNeedsMedia && (
                 <div className="space-y-2 mt-2">
-                  {form.header_format === 'image' && (
+                  {headerMediaKind && (
                     <div className="flex items-center gap-2">
                       <input
                         ref={headerFileRef}
                         type="file"
-                        accept="image/jpeg,image/png"
+                        accept={MEDIA_HEADER_SPECS[headerMediaKind].mimeTypes.join(',')}
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
-                          if (f) void handleHeaderImageFile(f);
+                          if (f) void handleHeaderMediaFile(f, headerMediaKind);
                           e.target.value = '';
                         }}
                       />
@@ -835,10 +862,10 @@ export function TemplateManager() {
                         ) : (
                           <Upload className="h-3.5 w-3.5" />
                         )}
-                        {t('uploadImage')}
+                        {t(uploadLabelKey[headerMediaKind])}
                       </Button>
                       <span className="text-[11px] text-muted-foreground">
-                        {t('uploadHint')}
+                        {t(uploadHintKey[headerMediaKind])}
                       </span>
                     </div>
                   )}
@@ -854,7 +881,7 @@ export function TemplateManager() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={form.header_media_url}
-                      alt={t('a11y.headerSampleAlt')}
+                      alt="Header sample"
                       className="max-h-28 rounded-md border border-border object-contain"
                     />
                   )}

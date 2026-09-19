@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle, ArrowLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { TazeyoMark } from "@/components/brand/tazeyo-mark";
 
 export default function ForgotPasswordPage() {
@@ -53,12 +53,12 @@ export default function ForgotPasswordPage() {
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-xl text-foreground">
-              {t("successTitle")}
+              {t("checkEmailTitle")}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {t.rich("successDesc", {
+              {t.rich("checkEmailDesc", {
                 email,
-                highlight: (chunks) => (
+                strong: (chunks) => (
                   <span className="text-foreground">{chunks}</span>
                 ),
               })}
@@ -117,7 +117,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? t("submitting") : t("submit")}
+              {loading ? t("sending") : t("sendLink")}
             </Button>
           </form>
 

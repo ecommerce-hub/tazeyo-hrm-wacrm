@@ -14,76 +14,9 @@
     "noAccount": "Hesabınız yok mu?",
     "createAccount": "Hesap oluştur"
   },
-  "SignupPage": {
-    "title": "Hesap oluştur",
-    "titleJoin": "Hesap oluştur ve katıl",
-    "desc": "Tazeyo HR CRM'e başlayın",
-    "descJoin": "E-postanızı doğrulayın, ardından daveti kabul ederek ekibinize katılın.",
-    "fullNameLabel": "Ad soyad",
-    "fullNamePlaceholder": "Ayşe Yılmaz",
-    "emailLabel": "E-posta",
-    "emailPlaceholder": "siz@ornek.com",
-    "passwordLabel": "Parola",
-    "passwordPlaceholder": "En az 6 karakter",
-    "confirmPasswordLabel": "Parolayı doğrula",
-    "confirmPasswordPlaceholder": "Parolanızı tekrar girin",
-    "submit": "Hesap oluştur",
-    "submitting": "Hesap oluşturuluyor...",
-    "haveAccount": "Zaten hesabınız var mı?",
-    "signIn": "Giriş yap",
-    "errorPasswordMismatch": "Parolalar eşleşmiyor",
-    "errorPasswordTooShort": "Parola en az 6 karakter olmalı",
-    "successTitle": "E-postanızı kontrol edin",
-    "successDesc": "<highlight>{email}</highlight> adresine bir onay bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edip hesabınızı doğrulamak için bağlantıya tıklayın.",
-    "backToSignIn": "Girişe dön"
-  },
-  "ForgotPasswordPage": {
-    "title": "Parolayı sıfırla",
-    "desc": "E-posta adresinizi girin, size sıfırlama bağlantısı gönderelim",
-    "emailLabel": "E-posta",
-    "emailPlaceholder": "siz@ornek.com",
-    "submit": "Sıfırlama bağlantısı gönder",
-    "submitting": "Gönderiliyor...",
-    "successTitle": "E-postanızı kontrol edin",
-    "successDesc": "<highlight>{email}</highlight> adresine bir parola sıfırlama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin.",
-    "backToSignIn": "Girişe dön"
-  },
-  "JoinPage": {
-    "verifying": "Davet doğrulanıyor…",
-    "roleAdmin": "Yönetici",
-    "roleAgent": "Temsilci",
-    "roleViewer": "İzleyici",
-    "failNotFoundTitle": "Davet bulunamadı",
-    "failNotFoundBody": "Bu bağlantı geçerli bir davetle eşleşmiyor. Adresi kontrol edin veya sizi davet eden kişiden yeni bir bağlantı isteyin.",
-    "failUsedTitle": "Davet zaten kullanılmış",
-    "failUsedBody": "Bu davet daha önce kabul edilmiş. Bunu siz yapmadıysanız hesap yöneticisinden yeni bir bağlantı isteyin.",
-    "failExpiredTitle": "Davetin süresi doldu",
-    "failExpiredBody": "Bu davetin süresi dolmuş. Hesap yöneticisinden yenisini isteyin — oluşturması birkaç saniye sürer.",
-    "failServerErrorTitle": "Bir şeyler ters gitti",
-    "failServerErrorBody": "Bu daveti şu anda doğrulayamadık. Birazdan sayfayı yenilemeyi deneyin.",
-    "tryAgain": "Tekrar dene",
-    "createAccountInstead": "Bunun yerine yeni hesap oluştur",
-    "signIn": "Giriş yap",
-    "invitedTo": "<highlight>{account}</highlight> hesabına davet edildiniz",
-    "joinAs": "<highlight>{role}</highlight> olarak katılacaksınız. Bağlantı {date} tarihine kadar geçerli.",
-    "acceptInvitation": "Daveti kabul et",
-    "accepting": "Kabul ediliyor…",
-    "acceptNote": "Kabul ettiğinizde girişiniz <highlight>{account}</highlight> hesabına taşınır. Kayıt sırasında oluşan boş kişisel hesabınız temizlenir.",
-    "createAccountAndJoin": "Hesap oluştur ve katıl",
-    "alreadyHaveAccount": "Zaten hesabım var",
-    "conflictTitle": "Bu hesapla {account} hesabına katılamazsınız",
-    "conflictBody": "<highlight>{account}</highlight> hesabına katılmak için çıkış yapıp farklı bir e-posta adresiyle yeniden kayıt olun. Davet bağlantısı, süresi dolmadığı sürece geçerli kalır.",
-    "conflictFallback": "Zaten başka bir hesaptasınız. Bu hesaba katılmak için farklı bir e-posta ile giriş yapın.",
-    "staySignedIn": "Oturumu açık tut",
-    "signOutAndSwitch": "Çıkış yap ve farklı e-posta kullan",
-    "signingOut": "Çıkış yapılıyor…",
-    "toastWelcome": "Ekibe hoş geldiniz",
-    "toastAcceptFailed": "Davet kabul edilemedi",
-    "toastUnreachable": "Sunucuya ulaşılamadı",
-    "toastSignOutFailed": "Çıkış yapılamadı. Sayfayı yenilemeyi deneyin."
-  },
   "Sidebar": {
     "title": "Tazeyo HR CRM",
+    "primaryNav": "Ana gezinme",
     "dashboard": "Panel",
     "inbox": "Gelen kutusu",
     "notifications": "Bildirimler",
@@ -133,12 +66,7 @@
     "unlinkedBody": "Bu durum çözülmeden yaptığınız hiçbir değişiklik kaydedilmez — veritabanı, hesabı veya rolü olmayan bir kullanıcının tüm yazma işlemlerini reddeder. Bir ekibe davet edildiyseniz hesap sahibinden daveti yeniden göndermesini isteyin. Kendi sunucunuzda barındırılan bir kurulumda, bu kullanıcı için account-bootstrap migrasyonunun çalıştığını kontrol edin.",
     "errorTitle": "İzinleriniz yüklenemedi",
     "errorBody": "Hesap rolünüz yüklenmedi; bu nedenle tüm işlemler salt okunur kabul edilir ve değişiklikler kaydedilmez. Bağlantınızı kontrol edip tekrar deneyin.",
-    "retry": "Tekrar dene",
-    "errors": {
-      "noProfileRow": "giriş yapan kullanıcı için profiles satırı yok",
-      "profileFetchFailed": "profil alınamadı",
-      "missingTenancy": "{profileId} profilinde {column} değeri yok"
-    }
+    "retry": "Tekrar dene"
   },
   "Dashboard": {
     "page": {
@@ -219,14 +147,14 @@
       "filterOpen": "Açık",
       "filterPending": "Beklemede",
       "filterClosed": "Kapalı",
-      "filterArchived": "Arşiv",
       "tags": "Etiketler",
       "company": "Şirket",
       "allCompanies": "Tüm şirketler",
       "clearAll": "Tümünü temizle",
       "noConversations": "Sohbet bulunamadı",
       "noMessagesYet": "Henüz mesaj yok",
-      "unknown": "Bilinmiyor"
+      "unknown": "Bilinmiyor",
+      "filterArchived": "Arşiv"
     },
     "messageThread": {
       "backToConversations": "Sohbetlere dön",
@@ -240,10 +168,6 @@
       "statusOpen": "Açık",
       "statusPending": "Beklemede",
       "statusClosed": "Kapalı",
-      "archive": "Arşivle",
-      "unarchive": "Arşivden Çıkar",
-      "block": "Engelle",
-      "unblock": "Engeli Kaldır",
       "assign": "Ata",
       "assigned": "Atandı",
       "unassign": "Atamayı kaldır",
@@ -255,19 +179,19 @@
       "selectConversationHint": "Mesajlaşmaya başlamak için soldan bir sohbet seçin",
       "today": "Bugün",
       "yesterday": "Dün",
+      "customer": "Müşteri",
+      "unknown": "Bilinmiyor",
+      "sendFailed": "Gönderilemedi: {reason}",
+      "sendTemplateFailed": "Şablon gönderilemedi: {reason}",
+      "waitForSending": "Mesajın gönderilmesini bekleyin",
+      "reactionFailed": "Tepki verilemedi: {reason}",
+      "assignmentUpdateFailed": "Atama güncellenemedi",
+      "archive": "Arşivle",
+      "unarchive": "Arşivden Çıkar",
+      "block": "Engelle",
+      "unblock": "Engeli Kaldır",
       "toasts": {
-        "sendFailed": "Gönderilemedi: {reason}",
-        "sendTemplateFailed": "Şablon gönderilemedi: {reason}",
-        "reactionFailed": "Tepki verilemedi: {reason}",
-        "blockFailed": "Engelleme işlemi başarısız: {reason}",
-        "networkError": "ağ hatası",
-        "messageStillSending": "Mesajın gönderilmesini bekleyin",
-        "assignFailed": "Atama güncellenemedi"
-      },
-      "labels": {
-        "you": "Siz",
-        "customer": "Müşteri",
-        "unknown": "Bilinmiyor"
+        "blockFailed": "Engelleme işlemi başarısız: {reason}"
       }
     },
     "sessionTimer": {
@@ -293,6 +217,13 @@
       "document": "Belge",
       "voiceNote": "Sesli not",
       "sendTemplate": "Şablon gönder",
+      "aiNotConfigured": "Yapay zekâ henüz kurulmadı — Ayarlar → Yapay zekâ asistanı bölümünden etkinleştirin.",
+      "draftFailed": "Yanıt taslağı oluşturulamadı.",
+      "draftEmpty": "Asistan bir yanıt döndürmedi.",
+      "aiUnreachable": "Yapay zekâ asistanına ulaşılamadı.",
+      "recordingTooLong": "Kayıt çok uzun (16 MB üzerinde).",
+      "recordingUnsupported": "Bu tarayıcıda sesli kayıt desteklenmiyor.",
+      "microphoneDenied": "Mikrofon erişimi reddedildi veya kullanılamıyor.",
       "draftWithAI": "Yapay zekâ ile yanıt taslağı oluştur",
       "addCaption": "Bir açıklama ekleyin…",
       "removeAttachment": "Eki kaldır",
@@ -304,22 +235,7 @@
       "send": "Gönder",
       "quickReplyNamePrompt": "Bu hızlı yanıta bir ad verin:",
       "quickReplySaved": "Hızlı yanıt olarak kaydedildi.",
-      "quickReplySaveError": "Hızlı yanıt kaydedilemedi.",
-      "toasts": {
-        "aiNotConfigured": "Yapay zekâ henüz kurulmadı — Ayarlar → Yapay zekâ asistanı bölümünden etkinleştirin.",
-        "draftFailed": "Yanıt taslağı oluşturulamadı.",
-        "draftEmpty": "Asistan bir yanıt döndürmedi.",
-        "aiUnreachable": "Yapay zekâ asistanına ulaşılamadı.",
-        "fileTooLarge": "Dosya {size, number} MB — {kind} sınırı {limit} MB.",
-        "kindImage": "görsel",
-        "kindVideo": "video",
-        "kindDocument": "belge",
-        "kindAudio": "ses",
-        "uploadFailed": "Yükleme başarısız.",
-        "recordingTooLong": "Kayıt çok uzun ({limit} MB üzerinde).",
-        "recordingUnsupported": "Bu tarayıcıda sesli kayıt desteklenmiyor.",
-        "micUnavailable": "Mikrofon erişimi reddedildi veya kullanılamıyor."
-      }
+      "quickReplySaveError": "Hızlı yanıt kaydedilemedi."
     },
     "bubble": {
       "photo": "Fotoğraf",
@@ -334,6 +250,7 @@
       "unsupported": "[Desteklenmeyen mesaj türü]",
       "aiBadge": "AI",
       "aiBadgeTitle": "Yapay zekâ asistanı tarafından otomatik olarak gönderildi",
+      "notDelivered": "İletilemedi",
       "download": "İndir",
       "downloadFailed": "Ek indirilemedi",
       "viewImage": "Görseli görüntüle",
@@ -387,12 +304,7 @@
       "finalUrl": "Nihai URL: {url}",
       "back": "Geri",
       "cancel": "İptal",
-      "send": "Şablon gönder",
-      "slots": {
-        "header": "Başlık {slot}",
-        "body": "Gövde {slot}",
-        "urlButton": "\"{text}\" URL butonu — {slot} için değer"
-      }
+      "send": "Şablon gönder"
     },
     "sidebar": {
       "contactInfo": "Kişi bilgileri",
@@ -420,6 +332,7 @@
       "subtitle": "Kişi listenizi yönetin. Toplam {count} kişi.",
       "subtitleZero": "Kişi listenizi yönetin.",
       "customFieldsBtn": "Özel alanlar",
+      "selectAllOnPage": "Bu sayfadaki tüm kişileri seç",
       "importBtn": "İçe aktar",
       "addContactBtn": "Kişi ekle",
       "searchPlaceholder": "Ada, telefona veya e-postaya göre ara...",
@@ -570,7 +483,11 @@
       "resultTags": "{count} etiket atandı",
       "resultTags_plural": "{count} etiket atandı",
       "resultSkipped": "{count} atlandı",
+      "resultInvalidPhone": "{count} geçersiz telefon",
+      "resultInvalidPhone_plural": "{count} geçersiz telefon",
       "resultFailed": "{count} başarısız",
+      "failedRowsHeading": "Başarısız satırlar",
+      "unknownReason": "Bilinmeyen hata",
       "willBeCreated": "{name} (içe aktarımda oluşturulacak)",
       "columns": {
         "phone": "Telefon",
@@ -592,6 +509,8 @@
       "toastTagsSkipped": "Bilinmeyen etiketler atlandı (önce Ayarlar'dan oluşturun): {sample}{more}",
       "toastSkipped": "{count} yinelenen kayıt atlandı",
       "toastSkipped_plural": "{count} yinelenen kayıt atlandı",
+      "toastInvalidPhone": "{count} kişide kullanılabilir telefon numarası yoktu",
+      "toastInvalidPhone_plural": "{count} kişide kullanılabilir telefon numarası yoktu",
       "toastFailed": "{count} kişi içe aktarılamadı",
       "toastFailed_plural": "{count} kişi içe aktarılamadı",
       "toastError": "İçe aktarma başarısız oldu"
@@ -617,10 +536,6 @@
     "errors": {
       "notAuthenticated": "Kimlik doğrulanmadı",
       "noAccountLinked": "Profiliniz bir hesaba bağlı değil."
-    },
-    "toasts": {
-      "networkError": "ağ hatası",
-      "templateFailed": "Şablon gönderilemedi: {reason}"
     }
   },
   "Pipelines": {
@@ -753,6 +668,7 @@
         "date": "Tarih"
       },
       "errorLoad": "Toplu gönderimler yüklenemedi",
+      "broadcastInProgress": "Toplu gönderim sürüyor",
       "retry": "Tekrar dene"
     },
     "status": {
@@ -813,9 +729,7 @@
       "retryFailed": "Başarısızları tekrar dene ({count})",
       "toastResumeStarted": "{count} alıcıya arka planda gönderiliyor.",
       "toastResumeStartedCapped": "{count} alıcıya arka planda gönderiliyor. Kalan {remaining} alıcı için yeni bir çalıştırma gerekecek.",
-      "toastResumeFailed": "Devam ettirilemedi: {error}",
-      "unknownContact": "Bilinmiyor",
-      "unknownError": "Bilinmeyen hata"
+      "toastResumeFailed": "Devam ettirilemedi: {error}"
     },
     "new": {
       "title": "Yeni toplu gönderim",
@@ -878,9 +792,7 @@
         "errorCsvParse": "CSV dosyası ayrıştırılamadı.",
         "errorCsvMissingPhone": "CSV dosyasında 'phone' sütunu bulunmalıdır.",
         "audienceSummary": "Kitle özeti",
-        "calculating": "Hesaplanıyor…",
-        "estimatedRecipients": "{count, plural, other {tahmini alıcı}}",
-        "selectTypeHint": "Tahmini görmek için bir kitle türü seçin."
+        "calculating": "Hesaplanıyor…"
       },
       "personalize": {
         "title": "Değişkenleri kişiselleştirin",
@@ -903,18 +815,18 @@
         "preview": "Önizleme",
         "previewSample": "Önizleme örnek verilerle gösteriliyor.",
         "noPreview": "Önizleme kullanılamıyor.",
+        "headerPreviewAlt": "Başlık önizlemesi",
+        "mediaUrlRequired": "Bu şablonu göndermek için bir medya URL'si gerekir.",
+        "mediaUrlInvalid": "Geçerli bir http(s) URL'si girin.",
+        "enterValue": "Değer girin...",
+        "loadingFields": "Yükleniyor…",
+        "noCustomFields": "Özel alan yok",
+        "unmappedWarning": "Devam etmeden önce her yer tutucuyu eşleyin — hâlâ eksik: <mono>{keys}</mono>. Aksi halde bu yer tutucular Meta'ya boş dize olarak gönderilir.",
         "fieldMap": {
           "name": "Ad",
           "phone": "Telefon",
           "email": "E-posta"
-        },
-        "headerPreviewAlt": "Başlık önizlemesi",
-        "mediaUrlRequired": "Bu şablonu göndermek için bir medya URL'si gerekir.",
-        "mediaUrlInvalid": "Geçerli bir http(s) URL'si girin.",
-        "staticValuePlaceholder": "Değer girin...",
-        "loadingFields": "Yükleniyor…",
-        "noCustomFields": "Özel alan yok",
-        "unmappedWarning": "Devam etmeden önce tüm yer tutucuları eşleştirin — hâlâ eksik olanlar: <keys>{list}</keys>. Aksi hâlde bu yer tutucular Meta'ya boş metin olarak gönderilir."
+        }
       },
       "scheduleSend": {
         "title": "İncele ve gönder",
@@ -939,7 +851,7 @@
         "estimatedReach": "Tahmini erişim",
         "language": "Dil",
         "confirmTitle": "Toplu gönderimi onaylayın",
-        "confirmDescription": "Bu toplu gönderimi <b>{template}</b> şablonuyla {count, plural, other {<b>#</b> kişiye}} göndermek üzeresiniz. Bu işlem geri alınamaz."
+        "confirmDesc": "Bu toplu mesajı <b>{template}</b> şablonuyla <b>{count, number}</b> {count, plural, =1 {kişiye} other {kişiye}} göndermek üzeresiniz. Bu işlem geri alınamaz."
       }
     },
     "errors": {
@@ -979,6 +891,8 @@
       "cancel": "İptal",
       "deleteTitle": "Otomasyonu sil",
       "deleteDesc": "Bu işlem {name} otomasyonunu ve çalıştırma geçmişini kalıcı olarak siler. Bu işlem geri alınamaz.",
+      "activeIndicator": "aktif",
+      "openMenu": "Menüyü aç",
       "toasts": {
         "activated": "Otomasyon etkinleştirildi",
         "paused": "Otomasyon duraklatıldı",
@@ -986,8 +900,7 @@
         "deleted": "Otomasyon silindi",
         "updateError": "Güncellenemedi",
         "duplicateError": "Çoğaltılamadı",
-        "deleteError": "Silinemedi",
-        "loadError": "Otomasyonlar yüklenemedi"
+        "deleteError": "Silinemedi"
       }
     },
     "edit": {
@@ -1011,6 +924,13 @@
       },
       "back": "Geri",
       "backAria": "Geri"
+    },
+    "relative": {
+      "never": "hiçbir zaman",
+      "justNow": "az önce",
+      "minutesAgo": "{n} dk önce",
+      "hoursAgo": "{n} sa önce",
+      "daysAgo": "{n} gün önce"
     },
     "builder": {
       "steps": {
@@ -1071,6 +991,7 @@
       "replyIdsHelp": "Eşleştirilecek buton/liste satırı kimlikleri, virgülle ayrılmış ve birebir. Buton gönder / Liste gönder adımında belirlediğiniz kimliklerin aynısını kullanın.",
       "schedule": "Zamanlama",
       "scheduleHint": "Cron ifadesi (örn. 0 9 * * 1-5)",
+      "schedulePlaceholder": "Cron ifadesi veya HH:mm",
       "active": "Aktif",
       "activeAria": "Aktif",
       "save": "Kaydet",
@@ -1123,6 +1044,11 @@
         "no": "Hayır"
       },
       "addStep": "Adım ekle",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "kindCondition": "Koşul",
+      "kindWait": "Bekle",
+      "kindAction": "Eylem",
       "delete": "Sil",
       "config": {
         "messageText": "Mesaj metni",
@@ -1167,60 +1093,7 @@
         "matchWordHint": "Anahtar kelimeyi yalnızca bağımsız bir kelime olarak eşleştirir; böylece \"k\" artık \"teşekkür\" içinde tetiklenmez. Boşlukla ayrılan dillerdeki kısa anahtar kelimeler için idealdir; boşluksuz yazılan diller için İçerir seçeneğini kullanın.",
         "matchExact": "Birebir",
         "closeConversationHint": "Sohbet durumunu \"Kapalı\" olarak ayarlar. Yapılandırma gerekmez."
-      },
-      "preview": {
-        "noText": "henüz metin yok",
-        "noBody": "henüz gövde metni yok",
-        "pickTemplate": "bir şablon seçin",
-        "noUrl": "URL yok",
-        "when": "{subject} olduğunda"
-      },
-      "labels": {
-        "tag": "Etiket",
-        "value": "Değer",
-        "schedulePlaceholder": "Cron ifadesi veya HH:mm",
-        "moveUp": "Yukarı taşı",
-        "moveDown": "Aşağı taşı",
-        "condition": "Koşul",
-        "wait": "Bekle",
-        "action": "Eylem",
-        "issueAt": "konum: {path}"
       }
-    },
-    "triggers": {
-      "new_message_received": "Yeni mesaj",
-      "first_inbound_message": "Kişiden ilk mesaj",
-      "keyword_match": "Anahtar kelime eşleşmesi",
-      "new_contact_created": "Yeni kişi",
-      "conversation_assigned": "Sohbet atandı",
-      "tag_added": "Etiket eklendi",
-      "time_based": "Zaman tabanlı",
-      "interactive_reply": "Buton / liste yanıtı"
-    },
-    "templates": {
-      "welcome_message": {
-        "name": "Karşılama mesajı",
-        "description": "İlk kez yazan kişilere selamlama mesajıyla otomatik yanıt verin."
-      },
-      "out_of_office": {
-        "name": "Ofis dışı",
-        "description": "Mesai dışı saatlerde otomatik yanıt vererek kimseyi bekletmeyin."
-      },
-      "lead_qualifier": {
-        "name": "Potansiyel müşteri değerlendirme",
-        "description": "Gelen potansiyel müşterileri elemek için değerlendirme soruları sorun."
-      },
-      "follow_up_reminder": {
-        "name": "Takip hatırlatması",
-        "description": "Bir kişi 24 saat içinde yanıt vermezse hatırlatma gönderin."
-      }
-    },
-    "relativeTime": {
-      "never": "hiçbir zaman",
-      "justNow": "az önce",
-      "minutesAgo": "{count} dk önce",
-      "hoursAgo": "{count} sa önce",
-      "daysAgo": "{count} gün önce"
     }
   },
   "Flows": {
@@ -1307,6 +1180,7 @@
       "listView": "Liste",
       "noNodeSelected": "Düğüm seçilmedi",
       "noNodeDesc": "Yapılandırmasını düzenlemek için tuvalde bir düğüm seçin.",
+      "editorView": "Düzenleyici görünümü",
       "form": {
         "advancesTo": "Şuraya ilerler",
         "textToCustomer": "Müşteriye gönderilen metin",
@@ -1364,7 +1238,12 @@
         "filenamePlaceholder": "invoice.pdf",
         "advanceAfterSending": "Gönderdikten sonra şuraya ilerle",
         "pickNextNode": "Sonraki düğümü seçin…",
-        "none": "— Yok —"
+        "none": "— Yok —",
+        "removeSection": "Bölümü kaldır",
+        "fileUploaded": "Dosya yüklendi.",
+        "uploadFailed": "Yükleme başarısız.",
+        "fileTooLarge": "Dosya {size} MB — sınır 16 MB.",
+        "defaultOptionTitle": "Seçenek"
       },
       "categories": {
         "messaging": "Mesajlaşma",
@@ -1417,71 +1296,15 @@
     "validation": {
       "noIssues": "Sorun yok. Etkinleştirmeye hazır.",
       "summary": "{errorCount} {errorCount, plural, =1 {hata} other {hata}}, {warningCount} {warningCount, plural, =1 {uyarı} other {uyarı}}",
-      "jumpToNode": "{key} düğümüne git",
-      "messages": {
-        "nameRequired": "Akış adı zorunludur.",
-        "entryNodeRequired": "Etkinleştirmeden önce bir giriş düğümü seçin.",
-        "atLeastOneNode": "Bir akışın etkinleştirilebilmesi için en az bir düğümü olmalıdır.",
-        "entryNodeMissing": "\"{key}\" giriş düğümü mevcut değil.",
-        "duplicateNodeKey": "Yinelenen node_key: \"{key}\".",
-        "unreachable": "\"{key}\" düğümüne giriş düğümünden ulaşılamıyor.",
-        "keywordRequired": "Anahtar kelime tetikleyicileri en az bir anahtar kelime gerektirir.",
-        "keywordsBlank": "{count} {count, plural, =1 {anahtar kelime} other {anahtar kelime}} boş — hiçbir şeyle eşleşmez.",
-        "startNextRequired": "Başlangıç düğümü bir sonraki düğümü göstermelidir.",
-        "startNextMissing": "Başlangıç düğümü var olmayan \"{key}\" düğümünü gösteriyor.",
-        "sendMessageTextRequired": "Mesaj gönder düğümü bir metin gövdesi gerektirir.",
-        "sendMessageNextRequired": "Mesaj gönder düğümü bir sonraki düğümü göstermelidir.",
-        "sendMessageNextMissing": "Mesaj gönder düğümü var olmayan \"{key}\" düğümünü gösteriyor.",
-        "sendMediaTypeRequired": "Medya gönder düğümü bir medya türü gerektirir (görsel, video veya belge).",
-        "sendMediaUrlRequired": "Medya gönder düğümü bir dosya gerektirir (etkinleştirmeden önce bir dosya yükleyin).",
-        "sendMediaCaptionTooLong": "Açıklama {max} karakteri aşıyor (WhatsApp sınırı).",
-        "sendMediaNextRequired": "Medya gönder düğümü bir sonraki düğümü göstermelidir.",
-        "sendMediaNextMissing": "Medya gönder düğümü var olmayan \"{key}\" düğümünü gösteriyor.",
-        "sendButtonsTextRequired": "Buton gönder düğümü bir metin gövdesi gerektirir.",
-        "sendButtonsAtLeastOne": "Buton gönder düğümü en az bir buton gerektirir.",
-        "sendButtonsTooMany": "WhatsApp bir mesajda en fazla {max} butona izin verir.",
-        "buttonReplyIdRequired": "{index}. buton bir yanıt kimliği gerektirir.",
-        "buttonReplyIdDuplicate": "Yinelenen buton yanıt kimliği: \"{id}\".",
-        "buttonTitleRequired": "{index}. buton bir başlık gerektirir.",
-        "buttonTitleTooLong": "{index}. butonun başlığı {max} karakteri aşıyor (WhatsApp sınırı).",
-        "buttonNextRequired": "{index}. buton bir sonraki düğüm gerektirir.",
-        "buttonNextMissing": "{index}. buton var olmayan \"{key}\" düğümünü gösteriyor.",
-        "sendListTextRequired": "Liste gönder düğümü bir metin gövdesi gerektirir.",
-        "sendListButtonLabelRequired": "Liste gönder düğümü bir buton etiketi gerektirir (açmak için dokunulan metin).",
-        "sendListAtLeastOneRow": "Liste gönder düğümü en az bir satır gerektirir.",
-        "sendListTooManyRows": "Liste gönder düğümü tüm bölümlerde toplam en fazla {max} satıra izin verir.",
-        "rowReplyIdRequired": "{section}. bölümdeki {row}. satır bir yanıt kimliği gerektirir.",
-        "rowReplyIdDuplicate": "Yinelenen liste satırı kimliği: \"{id}\".",
-        "rowTitleRequired": "{row}. satır bir başlık gerektirir.",
-        "rowTitleTooLong": "{row}. satırın başlığı {max} karakteri aşıyor.",
-        "rowDescriptionTooLong": "{row}. satırın açıklaması {max} karakteri aşıyor.",
-        "rowNextRequired": "{row}. satır bir sonraki düğüm gerektirir.",
-        "rowNextMissing": "{row}. satır var olmayan \"{key}\" düğümünü gösteriyor.",
-        "collectPromptRequired": "Girdi topla düğümü müşteriye gönderilecek bir soru gerektirir.",
-        "collectVarKeyRequired": "Girdi topla düğümü yanıtın saklanacağı bir var_key gerektirir.",
-        "collectVarKeyInvalid": "\"{key}\" var_key değeri yalnızca harf, rakam ve alt çizgi içerebilir; bir harf ya da alt çizgiyle başlamalıdır.",
-        "collectNextRequired": "Girdi topla düğümü bir sonraki düğümü göstermelidir.",
-        "collectNextMissing": "Girdi topla düğümü var olmayan \"{key}\" düğümünü gösteriyor.",
-        "conditionSubjectRequired": "Koşul değerlendirilecek bir alan gerektirir (var / tag / contact_field).",
-        "conditionSubjectKeyRequired": "Koşul bir subject_key gerektirir (değişken adı, etiket kimliği veya alan adı).",
-        "conditionOperatorRequired": "Koşul bir operatör gerektirir.",
-        "conditionValueEmpty": "\"{operator}\" operatörü genellikle bir karşılaştırma değeri bekler — boş değer yalnızca boş öznelerle eşleşir.",
-        "conditionTrueBranchRequired": "Koşul, \"true\" dalı için bir düğüm gerektirir.",
-        "conditionFalseBranchRequired": "Koşul, \"false\" dalı için bir düğüm gerektirir.",
-        "conditionBranchMissing": "Koşulun \"{branch}\" dalı var olmayan \"{key}\" düğümünü gösteriyor.",
-        "setTagModeRequired": "Etiket düğümü bir mod gerektirir (ekle veya kaldır).",
-        "setTagIdRequired": "Etiket düğümü uygulanacak bir etiket gerektirir.",
-        "setTagNextRequired": "Etiket düğümü bir sonraki düğümü göstermelidir.",
-        "setTagNextMissing": "Etiket düğümü var olmayan \"{key}\" düğümünü gösteriyor.",
-        "unknownNodeType": "Bilinmeyen düğüm türü: \"{type}\"."
-      }
+      "jumpToNode": "{key} düğümüne git"
     },
     "editorState": {
       "saved": "Kaydedildi.",
       "fixIssues": "Etkinleştirmeden önce aşağıdaki sorunları giderin.",
       "statusActivated": "Akış etkinleştirildi.",
       "statusArchived": "Arşivlendi.",
-      "statusDraft": "Taslak olarak kaydedildi."
+      "statusDraft": "Taslak olarak kaydedildi.",
+      "deleteConfirm": "\"{name}\" silinsin mi? Devam eden tüm çalıştırmalar hemen sona erer. Bu işlem geri alınamaz."
     },
     "summary": {
       "options": "{count} {count, plural, =1 {seçenek} other {seçenek}}",
@@ -1504,34 +1327,16 @@
     "header": {
       "backToFlows": "Akışlara dön",
       "namePlaceholder": "Akış adı",
-      "nameLabel": "Akış adı",
-      "unsavedChanges": "Kaydedilmemiş değişiklikler — kalıcı hâle getirmek için Kaydet'e basın",
+      "unsavedHint": "Kaydedilmemiş değişiklikler — kalıcı hâle getirmek için Kaydet'e basın",
       "edited": "Düzenlendi",
       "runs": "Çalıştırmalar",
       "delete": "Sil",
       "pause": "Duraklat",
       "activate": "Etkinleştir",
-      "activateBlocked": "Etkinleştirmeden önce aşağıdaki sorunları giderin",
+      "fixIssues": "Etkinleştirmeden önce aşağıdaki sorunları giderin",
       "save": "Kaydet",
       "descriptionPlaceholder": "Kısa bir açıklama ekleyin (dahili — müşteriler bunu görmez)",
-      "descriptionLabel": "Akış açıklaması",
-      "statusDraft": "Taslak",
-      "statusActive": "Aktif",
-      "statusArchived": "Arşivlendi"
-    },
-    "editor": {
-      "viewLabel": "Düzenleyici görünümü",
-      "deleteConfirm": "\"{name}\" silinsin mi? Devam eden tüm çalıştırmalar hemen sona erer. Bu işlem geri alınamaz.",
-      "saveFailed": "Kaydetme başarısız oldu.",
-      "saveFailedStatus": "Kaydetme başarısız oldu: {status}",
-      "statusUpdateFailed": "Durum güncellemesi başarısız oldu.",
-      "statusUpdateFailedStatus": "Durum güncellemesi başarısız oldu: {status}",
-      "deleteFailed": "Silme başarısız oldu.",
-      "deleteFailedStatus": "Silme başarısız oldu: {status}",
-      "removeSection": "Bölümü kaldır",
-      "fileTooLarge": "Dosya {size} MB — sınır {limit} MB.",
-      "fileUploaded": "Dosya yüklendi.",
-      "uploadFailed": "Yükleme başarısız oldu."
+      "descriptionLabel": "Akış açıklaması"
     },
     "templates": {
       "welcome_menu": {
@@ -1558,6 +1363,7 @@
   "Settings": {
     "pageTitle": "Ayarlar",
     "pageDesc": "Her şey tek yerde — hesabınız ve çalışma alanınız. Yönetmek için bir bölüm seçin.",
+    "sectionsNav": "Ayarlar bölümleri",
     "overview": {
       "notSetup": "Henüz kurulmadı",
       "connected": "Bağlandı",
@@ -1600,19 +1406,18 @@
       "expired": "süresi doldu",
       "revoke": "İptal et",
       "revokedToast": "Davet iptal edildi",
+      "loadFailed": "Üyeler yüklenemedi",
+      "loadInvitationsFailed": "Davetler yüklenemedi",
+      "updateRoleFailed": "Rol güncellenemedi",
+      "removeFailed": "Üye kaldırılamadı",
+      "revokeFailed": "Davet iptal edilemedi",
+      "networkError": "Sunucuya ulaşılamadı",
+      "memberAlt": "Üye",
       "removeDialogTitle": "Üyeyi kaldır",
       "removeDialogDesc": "<bold>{name}</bold> hesaptan kaldırılsın mı? Bu hesaptan çıkışı yapılacak ve bir sonraki girişinde kendisine yeni bir kişisel hesap verilecek. Giriş bilgileri silinmez.",
       "cancel": "İptal",
       "removing": "Kaldırılıyor...",
-      "removeBtn": "Üyeyi kaldır",
-      "toasts": {
-        "loadMembersFailed": "Üyeler yüklenemedi",
-        "loadInvitationsFailed": "Davetler yüklenemedi",
-        "serverUnreachable": "Sunucuya ulaşılamadı",
-        "updateRoleFailed": "Rol güncellenemedi",
-        "removeFailed": "Üye kaldırılamadı",
-        "revokeFailed": "Davet iptal edilemedi"
-      }
+      "removeBtn": "Üyeyi kaldır"
     },
     "invite": {
       "inviteCreated": "Davet oluşturuldu",
@@ -1624,6 +1429,8 @@
       "sendViaWhatsApp": "WhatsApp ile gönder",
       "done": "Tamam",
       "dialogTitle": "Ekip arkadaşı davet et",
+      "networkError": "Sunucuya ulaşılamadı. Tekrar denemek ister misiniz?",
+      "fallbackAccountName": "Tazeyo hesabımız",
       "dialogDesc": "Tek kullanımlık bir davet bağlantısı oluşturun. WhatsApp, Slack veya istediğiniz herhangi bir kanaldan paylaşın — e-posta hizmeti gerekmez.",
       "roleLabel": "Rol",
       "validForLabel": "Bağlantı geçerlilik süresi",
@@ -1640,12 +1447,7 @@
       "labelTooLong": "Ad en fazla {max} karakter olmalıdır",
       "copied": "Davet bağlantısı kopyalandı",
       "clipboardBlocked": "Pano engellendi — bağlantıyı elle kopyalayın",
-      "whatsappMessage": "Bu bağlantıyı kullanarak Tazeyo HR CRM üzerinde {accountName} hesabına katılın ({expiresInDays} gün geçerli): {url}",
-      "accountNameFallback": "Tazeyo HR CRM hesabımız",
-      "toasts": {
-        "createFailed": "Davet oluşturulamadı",
-        "networkError": "Sunucuya ulaşılamadı. Tekrar denemek ister misiniz?"
-      }
+      "whatsappMessage": "Bu bağlantıyı kullanarak Tazeyo HR CRM üzerinde {accountName} hesabına katılın ({expiresInDays} gün geçerli): {url}"
     },
     "tagsAndFields": {
       "title": "Alanlar ve etiketler",
@@ -1686,6 +1488,10 @@
       "title": "Mesaj şablonları",
       "description": "Şablon oluşturun ve onay için Meta'ya gönderin. Başka bir yerde onaylanmış şablonları çekmek için \"Meta'dan senkronize et\" seçeneğini kullanın.",
       "syncFromMeta": "Meta'dan senkronize et",
+      "qualityScoreTitle": "Meta kalite puanı",
+      "headerTextLabel": "Başlık metni",
+      "editFailedHttp": "Düzenleme başarısız (HTTP {status})",
+      "submitFailedHttp": "Gönderim başarısız (HTTP {status})",
       "syncing": "Senkronize ediliyor…",
       "syncTitle": "Onaylı şablonları Meta WhatsApp Business hesabınızdan çekin",
       "newTemplate": "Yeni şablon",
@@ -1724,7 +1530,11 @@
       "headerSampleAria": "Başlık değişkeni için örnek değer",
       "headerSamplePlaceholder": "{{1}} için örnek değer (Meta incelemesi için gerekli)",
       "uploadImage": "Görsel yükle",
+      "uploadVideo": "Video yükle",
+      "uploadDocument": "Belge yükle",
       "uploadHint": "JPEG veya PNG, ≤5 MB",
+      "uploadHintVideo": "MP4 veya 3GPP, ≤16 MB",
+      "uploadHintDocument": "PDF, Word, PowerPoint, Excel veya metin, ≤16 MB",
       "mediaUrlPlaceholder": "https://… (veya herkese açık bir {format} bağlantısı yapıştırın)",
       "imageHint": "Bir JPEG/PNG yükleyin (≤5 MB, ≥800×418 px önerilir) veya herkese açık bir HTTPS bağlantısı yapıştırın — inceleme için Meta'ya otomatik olarak yükleriz.",
       "mediaHint": "Herkese açık erişilebilir bir HTTPS bağlantısı olmalıdır. Meta bağlantıyı inceleme sırasında bir kez getirir, bu yüzden yaklaşık 24 saat erişilebilir kalmalıdır.",
@@ -1774,14 +1584,11 @@
       "toastDeleteSuccess": "Şablon silindi",
       "toastDeleteError": "Şablon silinemedi",
       "toastInvalidImage": "Başlık görseli JPEG veya PNG olmalıdır.",
-      "toastImageTooLarge": "Görsel {size} MB — Meta'nın sınırı 5 MB.",
+      "toastInvalidVideo": "Başlık videosu MP4 veya 3GPP dosyası olmalıdır.",
+      "toastInvalidDocument": "Başlık belgesi PDF, Word, PowerPoint, Excel veya metin dosyası olmalıdır.",
+      "toastMediaTooLarge": "Dosya {size} MB — yükleme sınırı {max} MB.",
       "toastUploadSuccess": "Görsel yüklendi.",
       "toastUploadFailed": "Yükleme başarısız.",
-      "a11y": {
-        "metaQualityScore": "Meta kalite puanı",
-        "headerText": "Başlık metni",
-        "headerSampleAlt": "Başlık örneği"
-      },
       "status": {
         "DRAFT": "Taslak",
         "PENDING": "Beklemede",
@@ -1791,13 +1598,6 @@
         "DISABLED": "Devre dışı",
         "IN_APPEAL": "İtiraz sürecinde",
         "PENDING_DELETION": "Silinmeyi bekliyor"
-      },
-      "toasts": {
-        "editFailedHttp": "Düzenleme başarısız (HTTP {status})",
-        "submitFailedHttp": "Gönderim başarısız (HTTP {status})",
-        "syncFailedHttp": "Senkronizasyon başarısız (HTTP {status})",
-        "deleteFailedHttp": "Silme başarısız (HTTP {status})",
-        "andMore": ", +{count} tane daha"
       }
     },
     "roles": {
@@ -1854,6 +1654,28 @@
       "mirrorInboundDesc": "Müşterilerin gönderdiği her fotoğrafın, videonun, sesli notun ve belgenin bir kopyasını kaydedin. Supabase depolama alanınızı kullanır; 16 MB üzerindeki dosyalar atlanır.",
       "mirrorInboundOffWarning": "Yeni ekler artık kopyalanmayacak ve ulaşmalarından yaklaşık 30 gün sonra erişilemez hale gelecek.",
       "mirrorInboundSaveFailed": "Ek ayarı güncellenemedi.",
+      "loadFailed": "WhatsApp yapılandırması yüklenemedi",
+      "phoneNumberIdRequired": "Telefon Numarası ID'si zorunludur",
+      "accessTokenRequired": "İlk kurulum için erişim token'ı gereklidir",
+      "reenterAccessToken": "Değişiklikleri kaydetmek için erişim token'ını yeniden girin",
+      "saveFailed": "Yapılandırma kaydedilemedi",
+      "savedButRegistrationFailed": "Kaydedildi, ancak Meta numarayı kaydedemedi: {error}",
+      "savedRegistrationSkipped": "Kimlik bilgileri kaydedildi ve doğrulandı. PIN girilmediği için gelen mesaj kaydı atlandı — aşağıdaki kayıt durumuna bakın.",
+      "liveWithName": "Yayında — {name} artık olayları alabilir.",
+      "connectedGeneric": "WhatsApp bağlandı. Olaylar bir dakika içinde akmaya başlayacak.",
+      "connectedTo": "{name} bağlantısı kuruldu",
+      "apiConnectionOk": "API bağlantısı başarılı",
+      "apiConnectionFailed": "API bağlantısı başarısız",
+      "connectionTestFailed": "Bağlantı testi başarısız oldu. Ağı kontrol edip tekrar deneyin.",
+      "fullyWired": "Numara tamamen bağlandı — Meta olayları iletiyor.",
+      "notFullyRegistered": "Numara tam olarak kayıtlı değil. Hangi adımın başarısız olduğunu aşağıdaki kontrollerden görebilirsiniz.",
+      "verifyEndpointUnreachable": "Doğrulama uç noktasına ulaşılamadı.",
+      "resetConfirm": "Bu işlem mevcut WhatsApp yapılandırmasını silecek ve bilgileri yeniden girmenize izin verecek. Devam edilsin mi?",
+      "resetFailed": "Yapılandırma sıfırlanamadı",
+      "resetDone": "Yapılandırma temizlendi. Artık kimlik bilgilerinizi yeniden girebilirsiniz.",
+      "webhookCopied": "Webhook URL'si panoya kopyalandı",
+      "phoneNumberIdPlaceholder": "örn. 100234567890123",
+      "wabaIdPlaceholder": "örn. 100234567890456",
       "saving": "Kaydediliyor...",
       "saveConfig": "Yapılandırmayı kaydet",
       "testing": "Test ediliyor...",
@@ -1881,28 +1703,16 @@
       "step4_4": "Burada belirlediğiniz <strong class=\"text-foreground\">Doğrulama Token'ının</strong> aynısını girin",
       "step4_5": "\"messages\" webhook alanına abone olun",
       "metaDocs": "Meta WhatsApp API dokümantasyonu",
-      "toasts": {
-        "loadFailed": "WhatsApp yapılandırması yüklenemedi",
-        "phoneNumberIdRequired": "Telefon Numarası ID'si zorunludur",
-        "accessTokenRequired": "İlk kurulum için erişim token'ı gereklidir",
-        "reenterToken": "Değişiklikleri kaydetmek için erişim token'ını yeniden girin",
-        "saveFailed": "Yapılandırma kaydedilemedi",
-        "registerFailed": "Kaydedildi, ancak Meta numarayı kaydedemedi: {error}",
-        "registrationSkipped": "Kimlik bilgileri kaydedildi ve doğrulandı. PIN girilmediği için gelen mesaj kaydı atlandı — aşağıdaki kayıt durumuna bakın.",
-        "savedLive": "Yayında — {name} artık olayları alabilir.",
-        "savedConnected": "WhatsApp bağlandı. Olaylar bir dakika içinde akmaya başlayacak.",
-        "connectedTo": "{name} bağlantısı kuruldu",
-        "connectionSuccess": "API bağlantısı başarılı",
-        "connectionFailed": "API bağlantısı başarısız",
-        "connectionTestFailed": "Bağlantı testi başarısız oldu. Ağı kontrol edip tekrar deneyin.",
-        "registrationLive": "Numara tamamen bağlandı — Meta olayları iletiyor.",
-        "registrationNotLive": "Numara tam olarak kayıtlı değil. Hangi adımın başarısız olduğunu aşağıdaki kontrollerden görebilirsiniz.",
-        "verifyUnreachable": "Doğrulama uç noktasına ulaşılamadı.",
-        "resetConfirm": "Bu işlem mevcut WhatsApp yapılandırmasını silecek ve bilgileri yeniden girmenize izin verecek. Devam edilsin mi?",
-        "resetFailed": "Yapılandırma sıfırlanamadı",
-        "resetSuccess": "Yapılandırma temizlendi. Artık kimlik bilgilerinizi yeniden girebilirsiniz.",
-        "webhookCopied": "Webhook URL'si panoya kopyalandı"
-      }
+      "lastSaveFailed": "Son kayıt başarısız oldu",
+      "metaErrorStep": "Adım",
+      "metaErrorCode": "Meta hata kodu",
+      "metaErrorTrace": "İzleme kimliği",
+      "metaErrorMessage": "Meta'nın yanıtı",
+      "metaErrorDetailsHint": "Meta desteğiyle iletişime geçerken bu ayrıntıları iletin.",
+      "phoneNumberIdNotNumeric": "Telefon Numarası Kimliği yalnızca rakamlardan oluşmalıdır. Meta → WhatsApp → API Kurulumu'ndaki sayısal kimliği kopyalayın, telefon numarasının kendisini değil.",
+      "wabaIdNotNumeric": "WhatsApp Business Hesap Kimliği yalnızca rakamlardan oluşmalıdır. Meta → WhatsApp → API Kurulumu'ndan kopyalayın.",
+      "wabaSubscribed": "WhatsApp Business Hesabı bu uygulamaya abone — gelen webhook'lar iletilebilir.",
+      "wabaNotSubscribed": "WhatsApp Business Hesabı bu uygulamaya abone değil; Meta gelen webhook'ları iletmeyecek. Aboneliği başlatmak için erişim belirtecini yeniden girip kaydedin."
     },
     "sections": {
       "overview": "Genel bakış",
@@ -1928,6 +1738,7 @@
       "uploadPhoto": "Fotoğraf yükle",
       "remove": "Kaldır",
       "photoHint": "PNG, JPG, WebP veya GIF. En fazla 2 MB.",
+      "unknownError": "Bilinmeyen hata",
       "displayName": "Görünen ad",
       "email": "E-posta",
       "emailChangeHint": "<bold>{oldEmail}</bold> ve <bold>{newEmail}</bold> adreslerinin gelen kutusunu kontrol edin — değişikliğin geçerli olması için ikisinin de onaylanması gerekir.",
@@ -1976,8 +1787,7 @@
       "title": "Görünüm",
       "description": "Uygulama genelinde kullanılan modu ve vurgu rengini ayarlayın. Bu cihaza kaydedilir — deneyin, anında değişir.",
       "mode": "Mod",
-      "modeLight": "Açık",
-      "modeDark": "Koyu",
+      "colorMode": "Renk modu",
       "useMode": "{mode} modunu kullan",
       "active": "Aktif",
       "accentColor": "Vurgu rengi",
@@ -1986,6 +1796,30 @@
     "security": {
       "title": "Giriş ve güvenlik",
       "description": "Parolanızı değiştirin ve cihazlarınızdan çıkış yapın. Bunlar hesabınızı güvende tutar."
+    },
+    "browserNotifications": {
+      "title": "Tarayıcı bildirimleri",
+      "description": "Başka bir sayfadayken bile her yeni müşteri mesajı için masaüstü uyarısı alın. Bu cihaza kaydedilir.",
+      "toggleLabel": "Yeni müşteri mesajlarında beni bilgilendir",
+      "toggleDesc": "Yalnızca uygulama bir tarayıcı sekmesinde açıkken çalışır.",
+      "statusGranted": "Tarayıcınız tarafından izin verildi.",
+      "statusDefault": "Bunu açtığınızda tarayıcınızdan izin istenecek.",
+      "statusDenied": "Tarayıcı ayarlarında engellendi",
+      "deniedHint": "Tarayıcınızın site ayarlarından (genellikle adres çubuğunun yanındaki kilit simgesi) bu site için bildirimlere izin verin, sonra sayfayı yenileyin.",
+      "unsupported": "Bu tarayıcı masaüstü bildirimlerini desteklemiyor.",
+      "sendTest": "Test bildirimi gönder",
+      "testTitle": "Test bildirimi",
+      "testBody": "Bildirimler çalışıyor. Yeni müşteri mesajları böyle görünecek.",
+      "permissionDeniedToast": "Tarayıcınız bildirimleri engelledi",
+      "labels": {
+        "fallbackTitle": "Yeni mesaj",
+        "image": "📷 Fotoğraf",
+        "audio": "🎤 Sesli mesaj",
+        "video": "🎬 Video",
+        "document": "📄 Belge",
+        "location": "📍 Konum",
+        "template": "📋 Şablon"
+      }
     },
     "apiKeys": {
       "title": "API anahtarları",
@@ -2111,11 +1945,9 @@
       "addDoc": "Belge ekle",
       "reindex": "Yeniden dizinle",
       "reindexTooltip": "Tüm belgelerin gömme vektörlerini yeniden oluştur (örn. bir embeddings anahtarı ekledikten sonra)",
-      "loading": "Yükleniyor…",
-      "a11y": {
-        "edit": "Düzenle",
-        "delete": "Sil"
-      }
+      "editDoc": "Düzenle",
+      "deleteDoc": "Sil",
+      "loading": "Yükleniyor…"
     },
     "quickReplies": {
       "title": "Hızlı yanıtlar",
@@ -2138,17 +1970,137 @@
       "deleteError": "Hızlı yanıt silinemedi."
     }
   },
+  "SignupPage": {
+    "passwordsMismatch": "Parolalar eşleşmiyor",
+    "passwordTooShort": "Parola en az 6 karakter olmalı",
+    "checkEmailTitle": "E-postanızı kontrol edin",
+    "checkEmailDesc": "<strong>{email}</strong> adresine bir doğrulama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin ve hesabınızı doğrulamak için bağlantıya tıklayın.",
+    "backToSignIn": "Girişe dön",
+    "titleJoin": "Hesap oluştur ve katıl",
+    "title": "Hesap oluştur",
+    "descJoin": "E-postanızı doğrulayın, ardından daveti kabul ederek ekibinize katılın.",
+    "desc": "Tazeyo HR CRM'e başlayın",
+    "fullNameLabel": "Ad soyad",
+    "fullNamePlaceholder": "Ayşe Yılmaz",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "siz@ornek.com",
+    "passwordLabel": "Parola",
+    "passwordPlaceholder": "En az 6 karakter",
+    "confirmPasswordLabel": "Parolayı doğrula",
+    "confirmPasswordPlaceholder": "Parolanızı tekrar girin",
+    "creating": "Hesap oluşturuluyor...",
+    "submit": "Hesap oluştur",
+    "haveAccount": "Zaten hesabınız var mı?",
+    "signIn": "Giriş yap"
+  },
+  "ForgotPasswordPage": {
+    "checkEmailTitle": "E-postanızı kontrol edin",
+    "checkEmailDesc": "<strong>{email}</strong> adresine bir parola sıfırlama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin.",
+    "backToSignIn": "Girişe dön",
+    "title": "Parolayı sıfırla",
+    "desc": "E-posta adresinizi girin, size sıfırlama bağlantısı gönderelim",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "siz@ornek.com",
+    "sending": "Gönderiliyor...",
+    "sendLink": "Sıfırlama bağlantısı gönder"
+  },
+  "JoinPage": {
+    "fail": {
+      "notFoundTitle": "Davet bulunamadı",
+      "notFoundBody": "Bu bağlantı geçerli bir davetle eşleşmiyor. Adresi kontrol edin veya sizi davet eden kişiden yeni bir bağlantı isteyin.",
+      "usedTitle": "Davet zaten kullanılmış",
+      "usedBody": "Bu davet daha önce kabul edilmiş. Bunu siz yapmadıysanız hesap yöneticisinden yeni bir bağlantı isteyin.",
+      "expiredTitle": "Davetin süresi doldu",
+      "expiredBody": "Bu davetin süresi dolmuş. Hesap yöneticisinden yenisini isteyin — oluşturması birkaç saniye sürer.",
+      "serverErrorTitle": "Bir şeyler ters gitti",
+      "serverErrorBody": "Bu daveti şu anda doğrulayamadık. Birazdan sayfayı yenilemeyi deneyin."
+    },
+    "conflictDefault": "Zaten başka bir hesaptasınız. Bu hesaba katılmak için farklı bir e-posta ile giriş yapın.",
+    "acceptFailed": "Davet kabul edilemedi",
+    "welcome": "Ekibe hoş geldiniz",
+    "serverUnreachable": "Sunucuya ulaşılamadı",
+    "signOutFailed": "Çıkış yapılamadı. Sayfayı yenilemeyi deneyin.",
+    "verifying": "Davet doğrulanıyor…",
+    "tryAgain": "Tekrar dene",
+    "createNewAccount": "Bunun yerine yeni hesap oluştur",
+    "signIn": "Giriş yap",
+    "invitedTo": "<account>{name}</account> hesabına davet edildiniz",
+    "joinAs": "<badge>{role}</badge> olarak katılacaksınız. Bağlantı {date} tarihine kadar geçerli.",
+    "accepting": "Kabul ediliyor…",
+    "acceptInvitation": "Daveti kabul et",
+    "acceptNote": "Daveti kabul ettiğinizde oturumunuz {name} hesabına taşınır. Kayıt sırasında oluşan boş kişisel hesabınız temizlenecek.",
+    "conflictTitle": "Bu hesapla {name} hesabına katılamazsınız",
+    "conflictBody": "<account>{name}</account> hesabına katılmak için oturumu kapatıp farklı bir e-posta adresiyle yeniden kaydolun. Davet bağlantısı, süresi dolmadığı sürece geçerli kalır.",
+    "staySignedIn": "Oturumu açık tut",
+    "signingOut": "Çıkış yapılıyor…",
+    "signOutSwitch": "Çıkış yap ve farklı e-posta kullan",
+    "createAndJoin": "Hesap oluştur ve katıl",
+    "haveAccount": "Zaten hesabım var"
+  },
+  "Notifications": {
+    "title": "Bildirimler",
+    "description": "Diğer ekip arkadaşlarınızın size atadığı sohbetler burada görünür.",
+    "markAllRead": "Tümünü okundu olarak işaretle",
+    "markReadFailed": "Bildirim okundu olarak işaretlenemedi",
+    "markAllFailed": "Tümü okundu olarak işaretlenemedi",
+    "retry": "Tekrar dene",
+    "emptyTitle": "Henüz bildirim yok",
+    "emptyDesc": "Biri size bir sohbet atadığında burada bir uyarı görürsünüz.",
+    "unread": "Okunmamış"
+  },
+  "Agents": {
+    "title": "Yapay zekâ asistanları",
+    "description": "Kendi anahtarınızla çalışan yapay zekâ asistanınız — önce kurun, sonra gelen kutusunda müşterilere yanıt vermeden önce Playground'da test edin.",
+    "tabPlayground": "Playground",
+    "tabSetup": "Kurulum",
+    "tabUsage": "Kullanım",
+    "playground": {
+      "title": "Playground",
+      "subtitle": "— müşteriymişsiniz gibi yanıtları test edin",
+      "reset": "Sıfırla",
+      "emptyTitle": "Asistanınızın nasıl yanıt vereceğini görmek için bir mesaj gönderin.",
+      "emptyDesc": "Bilgi bankanızı kullanır ve otomatik yanıt botuyla tamamen aynı şekilde davranır — insana devretme dâhil.",
+      "goToSetup": "Henüz kurmadınız mı? Kuruluma gidin",
+      "handoff": "Burada bir insana devrederdi",
+      "thinking": "Düşünüyor…",
+      "placeholder": "Bir müşteri mesajı yazın…",
+      "notConfigured": "Henüz yapılandırılmış bir asistan yok — önce kurulumu tamamlayın.",
+      "noReply": "Yanıt alınamadı.",
+      "unreachable": "Asistana ulaşılamadı."
+    },
+    "usage": {
+      "title": "Token kullanımı",
+      "description": "Taslakların ve otomatik yanıt botunun sağlayıcı anahtarınızla harcadığı tokenlar. Yalnızca sayılar tutulur — burada mesaj içeriği saklanmaz.",
+      "window": "Son {days} gün",
+      "loadFailed": "Kullanım yüklenemedi",
+      "empty": "Son {days} günde henüz yapay zekâ kullanımı yok.",
+      "emptyHint": "Asistan taslak yazdıkça ve otomatik yanıt verdikçe burası dolar.",
+      "totalTokens": "Toplam token",
+      "llmCalls": "LLM çağrısı",
+      "autoReply": "Otomatik yanıt",
+      "drafts": "Taslaklar",
+      "tokens": "Token",
+      "tokensPerDay": "Günlük token",
+      "byModel": "Modele göre",
+      "modelCalls": "{tokens} tok · {count, plural, =1 {# çağrı} other {# çağrı}}",
+      "partialWindow": "Kısmi bir aralık gösteriliyor — kullanım o kadar yüksek ki burada yalnızca en yeni kayıtlar özetleniyor."
+    }
+  },
   "Interactive": {
-    "kindButtons": "Yanıt butonları",
-    "kindList": "Liste",
+    "replyButtons": "Yanıt butonları",
+    "list": "Liste",
     "body": "Gövde",
     "bodyPlaceholder": "Müşterinin seçeneklerin üstünde okuduğu metin",
     "header": "Başlık (isteğe bağlı)",
     "footer": "Alt bilgi (isteğe bağlı)",
-    "showReplyIds": "Yanıt kimliklerini göster (gelişmiş)",
+    "showIds": "Yanıt kimliklerini göster (gelişmiş)",
     "preview": "Önizleme",
+    "previewBody": "Mesaj gövdesi…",
+    "previewButton": "Buton",
+    "previewMenu": "Menü",
     "buttonsCount": "Butonlar ({count}/{max})",
-    "buttonTitlePlaceholder": "Buton etiketi",
+    "idPlaceholder": "id",
+    "buttonLabelPlaceholder": "Buton etiketi",
     "addButton": "Buton ekle",
     "listButtonLabel": "Liste butonu etiketi",
     "rowsCount": "Satırlar ({count}/{max})",
@@ -2156,89 +2108,9 @@
     "rowTitlePlaceholder": "Satır başlığı",
     "rowDescriptionPlaceholder": "Açıklama (isteğe bağlı)",
     "addRow": "Satır ekle",
-    "addSection": "Bölüm ekle",
-    "previewBodyPlaceholder": "Mesaj gövdesi…",
-    "previewButtonFallback": "Buton",
-    "previewMenuFallback": "Menü",
-    "validation": {
-      "payloadRequired": "Etkileşimli mesaj içeriği gereklidir.",
-      "bodyRequired": "Etkileşimli mesajın gövde metni gereklidir.",
-      "bodyTooLong": "Gövde metni {max} karakter sınırını aşıyor.",
-      "headerTooLong": "Başlık {max} karakter sınırını aşıyor.",
-      "footerTooLong": "Alt bilgi {max} karakter sınırını aşıyor.",
-      "buttonsRequired": "En az bir yanıt butonu ekleyin.",
-      "tooManyButtons": "Yanıt butonlu mesajda en fazla {max} buton olabilir.",
-      "buttonIdRequired": "Her butonun bir kimliği olmalıdır.",
-      "duplicateButtonId": "Yinelenen buton kimliği: \"{id}\".",
-      "buttonTitleRequired": "Her butonun bir etiketi olmalıdır.",
-      "buttonTitleTooLong": "\"{title}\" buton etiketi {max} karakter sınırını aşıyor.",
-      "listButtonLabelRequired": "Liste için bir buton etiketi gereklidir.",
-      "listButtonLabelTooLong": "Liste butonu etiketi {max} karakter sınırını aşıyor.",
-      "sectionsRequired": "En az bir liste bölümü ekleyin.",
-      "tooManySections": "Bir listede en fazla {max} bölüm olabilir.",
-      "sectionRowsRequired": "Her liste bölümünde satır olmalıdır.",
-      "rowIdRequired": "Her liste satırının bir kimliği olmalıdır.",
-      "duplicateRowId": "Yinelenen liste satırı kimliği: \"{id}\".",
-      "rowTitleRequired": "Her liste satırının bir başlığı olmalıdır.",
-      "rowTitleTooLong": "\"{title}\" liste satırı başlığı {max} karakter sınırını aşıyor.",
-      "rowDescriptionTooLong": "Liste satırı açıklaması {max} karakter sınırını aşıyor.",
-      "rowsRequired": "En az bir liste satırı ekleyin.",
-      "tooManyRows": "Bir listede toplam en fazla {max} satır olabilir.",
-      "unknownKind": "Etkileşimli mesaj yanıt butonları veya liste olmalıdır."
-    }
+    "addSection": "Bölüm ekle"
   },
-  "Agents": {
-    "page": {
-      "title": "Yapay zekâ asistanları",
-      "description": "Kendi anahtarınızla çalışan yapay zekâ asistanınız — önce kurun, sonra gelen kutusunda müşterilere yanıt vermeden önce Playground'da test edin.",
-      "tabPlayground": "Playground",
-      "tabSetup": "Kurulum",
-      "tabUsage": "Kullanım"
-    },
-    "playground": {
-      "title": "Playground",
-      "subtitle": "— müşteriymişsiniz gibi yanıtları test edin",
-      "reset": "Sıfırla",
-      "emptyTitle": "Asistanınızın nasıl yanıt vereceğini görmek için bir mesaj gönderin.",
-      "emptyBody": "Bilgi bankanızı kullanır ve otomatik yanıt botuyla tamamen aynı şekilde davranır — insana devretme dâhil.",
-      "goToSetup": "Henüz kurmadınız mı? Kuruluma gidin",
-      "handoff": "Burada bir insana devrederdi",
-      "thinking": "Düşünüyor…",
-      "inputPlaceholder": "Bir müşteri mesajı yazın…",
-      "errorNotConfigured": "Henüz yapılandırılmış bir asistan yok — önce kurulumu tamamlayın.",
-      "errorNoReply": "Yanıt alınamadı.",
-      "errorUnreachable": "Asistana ulaşılamadı."
-    },
-    "usage": {
-      "title": "Token kullanımı",
-      "description": "Taslakların ve otomatik yanıt botunun sağlayıcı anahtarınızla harcadığı tokenlar. Yalnızca sayılar tutulur — burada mesaj içeriği saklanmaz.",
-      "windowLastDays": "{count, plural, =1 {Son {count} gün} other {Son {count} gün}}",
-      "emptyTitle": "{count, plural, =1 {Son {count} günde henüz yapay zekâ kullanımı yok.} other {Son {count} günde henüz yapay zekâ kullanımı yok.}}",
-      "emptyBody": "Asistan taslak yazdıkça ve otomatik yanıt verdikçe burası dolar.",
-      "statTotalTokens": "Toplam token",
-      "statCalls": "LLM çağrısı",
-      "statAutoReply": "Otomatik yanıt",
-      "statDrafts": "Taslaklar",
-      "tokensPerDay": "Günlük token",
-      "chartSeriesTokens": "Token",
-      "byModel": "Modele göre",
-      "modelUsage": "{tokens} token · {count} {count, plural, =1 {çağrı} other {çağrı}}",
-      "truncated": "Kısmi bir aralık gösteriliyor — kullanım o kadar yüksek ki burada yalnızca en yeni kayıtlar özetleniyor.",
-      "loadFailed": "Kullanım yüklenemedi"
-    }
-  },
-  "Notifications": {
-    "title": "Bildirimler",
-    "description": "Diğer ekip arkadaşlarınızın size atadığı sohbetler burada görünür.",
-    "markAllRead": "Tümünü okundu olarak işaretle",
-    "retry": "Tekrar dene",
-    "unread": "Okunmamış",
-    "emptyTitle": "Henüz bildirim yok",
-    "emptyBody": "Biri size bir sohbet atadığında burada bir uyarı görürsünüz.",
-    "toastMarkReadFailed": "Bildirim okundu olarak işaretlenemedi",
-    "toastMarkAllReadFailed": "Tümü okundu olarak işaretlenemedi"
-  },
-  "Shell": {
+  "DashboardShell": {
     "loading": "Yükleniyor..."
   },
   "Common": {

@@ -26,6 +26,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   CheckCircle,
@@ -35,7 +36,7 @@ import {
   UsersRound,
 } from 'lucide-react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useIntlLocale } from '@/lib/i18n/date';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -67,37 +68,28 @@ interface PeekFail {
 }
 type PeekResult = PeekOk | PeekFail;
 
-// Both maps hold *catalogue keys*, not copy. Keeping them as
-// exhaustive Records means a new role or failure reason still fails
-// the build here rather than rendering an empty card at runtime.
-const ROLE_LABEL_KEY: Record<PeekOk['role'], string> = {
-  admin: 'roleAdmin',
-  agent: 'roleAgent',
-  viewer: 'roleViewer',
-};
-
-const FAIL_KEY: Record<
-  PeekFail['reason'],
-  { title: string; body: string }
-> = {
-  not_found: { title: 'failNotFoundTitle', body: 'failNotFoundBody' },
-  used: { title: 'failUsedTitle', body: 'failUsedBody' },
-  expired: { title: 'failExpiredTitle', body: 'failExpiredBody' },
-  server_error: {
-    title: 'failServerErrorTitle',
-    body: 'failServerErrorBody',
-  },
+// Message keys per peek failure reason — resolved through `t` inside
+// the component (hooks can't run at module level). Snake_case reasons
+// come from the API; the catalogue uses camelCase leaves.
+const FAIL_KEY: Record<PeekFail['reason'], 'notFound' | 'used' | 'expired' | 'serverError'> = {
+  not_found: 'notFound',
+  used: 'used',
+  expired: 'expired',
+  server_error: 'serverError',
 };
 
 export default function JoinPage() {
+  const params = useParams<{ token: string }>();
+  const token = params?.token;
   const t = useTranslations('JoinPage');
+  // Role labels are shared with Settings → Members so the invite page
+  // and the member list always agree on what a role is called.
+  const tRoles = useTranslations('Settings.roles');
   // The expiry date is formatted with `toLocaleDateString`, which
   // defaults to the *browser's* locale — so a Turkish UI would show an
   // English month to anyone whose OS is set to en-US. Pass the app
   // locale explicitly.
-  const locale = useLocale();
-  const params = useParams<{ token: string }>();
-  const token = params?.token;
+  const intlLocale = useIntlLocale();
 
   const [peek, setPeek] = useState<PeekResult | null>(null);
   // Local auth probe — the AuthProvider lives inside the (dashboard)
@@ -186,20 +178,20 @@ export default function JoinPage() {
         // a clear next-action (sign out → use different email)
         // rather than a 3-second toast.
         if (res.status === 409) {
-          setConflictMessage(payload.error || t('conflictFallback'));
+          setConflictMessage(payload.error || t('conflictDefault'));
         } else {
-          toast.error(payload.error || t('toastAcceptFailed'));
+          toast.error(payload.error || t('acceptFailed'));
         }
         setAccepting(false);
         return;
       }
-      toast.success(t('toastWelcome'));
+      toast.success(t('welcome'));
       // Full reload (not router.push) so AuthProvider re-fetches
       // the profile with the new account_id and account_role.
       window.location.href = '/dashboard';
     } catch (err) {
       console.error('[join] redeem error:', err);
-      toast.error(t('toastUnreachable'));
+      toast.error(t('serverUnreachable'));
       setAccepting(false);
     }
   }, [token, t]);
@@ -214,7 +206,7 @@ export default function JoinPage() {
       window.location.reload();
     } catch (err) {
       console.error('[join] sign-out error:', err);
-      toast.error(t('toastSignOutFailed'));
+      toast.error(t('signOutFailed'));
       setSigningOut(false);
     }
   }, [t]);
@@ -233,7 +225,7 @@ export default function JoinPage() {
 
   // ----- Peek failed -----
   if (!peek.ok) {
-    const copy = FAIL_KEY[peek.reason];
+    const failKey = FAIL_KEY[peek.reason];
     return (
       <Card className="w-full max-w-md border-border bg-card">
         <CardHeader className="items-center text-center">
@@ -241,10 +233,10 @@ export default function JoinPage() {
             <MailX className="h-6 w-6 text-red-400" />
           </div>
           <CardTitle className="text-xl text-foreground">
-            {t(copy.title)}
+            {t(`fail.${failKey}Title`)}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            {t(copy.body)}
+            {t(`fail.${failKey}Body`)}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -268,7 +260,7 @@ export default function JoinPage() {
                   variant="outline"
                   className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
-                  {t('createAccountInstead')}
+                  {t('createNewAccount')}
                 </Button>
               </Link>
             </>
@@ -276,7 +268,7 @@ export default function JoinPage() {
             <>
               <Link href="/signup">
                 <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  {t('createAccountInstead')}
+                  {t('createNewAccount')}
                 </Button>
               </Link>
               <Link href="/login">
@@ -302,19 +294,19 @@ export default function JoinPage() {
       </div>
       <CardTitle className="text-xl text-foreground">
         {t.rich('invitedTo', {
-          account: peek.account_name,
-          highlight: (chunks) => <span className="text-primary">{chunks}</span>,
+          name: peek.account_name,
+          account: (chunks) => <span className="text-primary">{chunks}</span>,
         })}
       </CardTitle>
       <CardDescription className="text-muted-foreground">
         {t.rich('joinAs', {
-          role: t(ROLE_LABEL_KEY[peek.role]),
-          date: new Date(peek.expires_at).toLocaleDateString(locale, {
+          role: tRoles(peek.role),
+          date: new Date(peek.expires_at).toLocaleDateString(intlLocale, {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
           }),
-          highlight: (chunks) => (
+          badge: (chunks) => (
             <span className="inline-flex items-center gap-1 text-foreground">
               <ShieldCheck className="size-3.5 text-primary" />
               {chunks}
@@ -350,12 +342,7 @@ export default function JoinPage() {
               )}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
-              {t.rich('acceptNote', {
-                account: peek.account_name,
-                highlight: (chunks) => (
-                  <span className="text-muted-foreground">{chunks}</span>
-                ),
-              })}
+              {t('acceptNote', { name: peek.account_name })}
             </p>
           </CardContent>
         </Card>
@@ -374,7 +361,7 @@ export default function JoinPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-popover-foreground">
                 <AlertTriangle className="size-4 text-amber-400" />
-                {t('conflictTitle', { account: peek.account_name })}
+                {t('conflictTitle', { name: peek.account_name })}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
                 {conflictMessage}
@@ -383,8 +370,8 @@ export default function JoinPage() {
             <div className="space-y-2 py-2 text-xs text-muted-foreground">
               <p>
                 {t.rich('conflictBody', {
-                  account: peek.account_name,
-                  highlight: (chunks) => (
+                  name: peek.account_name,
+                  account: (chunks) => (
                     <span className="text-popover-foreground">{chunks}</span>
                   ),
                 })}
@@ -409,7 +396,7 @@ export default function JoinPage() {
                     {t('signingOut')}
                   </>
                 ) : (
-                  t('signOutAndSwitch')
+                  t('signOutSwitch')
                 )}
               </Button>
             </DialogFooter>
@@ -426,7 +413,7 @@ export default function JoinPage() {
       <CardContent className="flex flex-col gap-2">
         <Link href={`/signup?invite=${encodeURIComponent(token!)}`}>
           <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-            {t('createAccountAndJoin')}
+            {t('createAndJoin')}
           </Button>
         </Link>
         <Link href={`/login?invite=${encodeURIComponent(token!)}`}>
@@ -434,7 +421,7 @@ export default function JoinPage() {
             variant="outline"
             className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
           >
-            {t('alreadyHaveAccount')}
+            {t('haveAccount')}
           </Button>
         </Link>
       </CardContent>

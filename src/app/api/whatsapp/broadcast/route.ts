@@ -7,9 +7,13 @@ import { resolveTemplateRow } from '@/lib/whatsapp/template-body'
 import {
   sanitizePhoneForMeta,
   isValidE164,
+  normalizePhone,
   phoneVariants,
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils'
+import { templateBodyParams, templateContentText } from '@/lib/whatsapp/template-body'
+import { mirrorBroadcastSend } from '@/lib/whatsapp/broadcast-mirror'
+import { supabaseAdmin } from '@/lib/flows/admin-client'
 import {
   checkRateLimit,
   rateLimitResponse,
@@ -47,6 +51,14 @@ interface BroadcastResult {
  */
 interface NewRecipient {
   phone: string
+  /**
+   * The contact this phone belongs to. The wizard always knows it (it
+   * builds recipients off `broadcast_recipients` rows) and passing it
+   * lets the inbox mirror skip a per-recipient phone lookup. Optional
+   * so legacy callers keep working — those fall back to a
+   * phone_normalized lookup.
+   */
+  contactId?: string
   /** Body variable values, one per {{N}}. Legacy field. */
   params?: string[]
   /**
@@ -217,6 +229,34 @@ export async function POST(request: Request) {
           whatsapp_message_id: sentMessageId,
         })
         sentCount++
+        // Mirror the send into the contact's inbox thread so a later
+        // reply has its context. Contact resolution goes through the
+        // RLS-scoped client (tenancy guard); the mirror writes with the
+        // admin client. Best-effort — a mirror failure never fails the
+        // send (the message already left).
+        let contactId = recipient.contactId ?? null
+        if (!contactId) {
+          const { data: byPhone } = await supabase
+            .from('contacts')
+            .select('id')
+            .eq('account_id', accountId)
+            .eq('phone_normalized', normalizePhone(sanitized))
+            .maybeSingle()
+          contactId = byPhone?.id ?? null
+        }
+        if (contactId) {
+          await mirrorBroadcastSend(supabaseAdmin(), {
+            accountId,
+            auditUserId: userId,
+            contactId,
+            whatsappMessageId: sentMessageId,
+            templateName: template_name,
+            contentText: templateContentText(
+              templateRow,
+              templateBodyParams(recipient.params ?? [], recipient.messageParams),
+            ),
+          })
+        }
       } else {
         console.error(
           `Failed to send broadcast to ${recipient.phone}:`,

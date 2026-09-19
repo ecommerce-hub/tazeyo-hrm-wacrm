@@ -26,7 +26,8 @@ import {
   phoneVariants,
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils';
-import { resolveTemplateRow } from '@/lib/whatsapp/template-body';
+import { resolveTemplateRow, templateContentText } from '@/lib/whatsapp/template-body';
+import { mirrorBroadcastSend } from '@/lib/whatsapp/broadcast-mirror';
 import type { MessageTemplate } from '@/types';
 import { findOrCreateContact } from '@/lib/api/v1/contacts';
 
@@ -58,12 +59,16 @@ export interface CreateBroadcastParams {
 
 interface PlannedRecipient {
   recipientRowId: string;
+  contactId: string;
   phone: string;
   params: string[];
 }
 
 export interface BroadcastPlan {
   broadcastId: string;
+  /** Tenancy + sender-of-record for the inbox mirror. */
+  accountId: string;
+  auditUserId: string;
   templateName: string;
   templateLanguage: string;
   phoneNumberId: string;
@@ -242,12 +247,19 @@ export async function createBroadcast(
   const planned: PlannedRecipient[] = createdRows.map(
     (row: { recipient_id: string; contact_id: string }) => {
       const r = byContact.get(row.contact_id)!;
-      return { recipientRowId: row.recipient_id, phone: r.phone, params: r.params };
+      return {
+        recipientRowId: row.recipient_id,
+        contactId: row.contact_id,
+        phone: r.phone,
+        params: r.params,
+      };
     }
   );
 
   return {
     broadcastId,
+    accountId,
+    auditUserId,
     templateName,
     templateLanguage: resolvedTemplate.language,
     phoneNumberId: config.phone_number_id,
@@ -312,6 +324,16 @@ export async function deliverBroadcast(
           error_message: null,
         })
         .eq('id', recipient.recipientRowId);
+      // Surface the send in the contact's inbox thread so a later
+      // reply has its context. Best-effort — never fails the pass.
+      await mirrorBroadcastSend(db, {
+        accountId: plan.accountId,
+        auditUserId: plan.auditUserId,
+        contactId: recipient.contactId,
+        whatsappMessageId: sentMessageId,
+        templateName: plan.templateName,
+        contentText: templateContentText(plan.templateRow, recipient.params),
+      });
     } else {
       await db
         .from('broadcast_recipients')

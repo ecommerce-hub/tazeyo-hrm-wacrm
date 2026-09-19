@@ -66,7 +66,12 @@
     "unlinkedBody": "Nada do que você alterar será salvo enquanto isso não for resolvido — o banco de dados rejeita toda gravação de um usuário sem conta ou função. Se você foi convidado para uma equipe, peça ao proprietário para reenviar o convite. Em uma instalação própria, verifique se a migração de bootstrap da conta foi executada para este usuário.",
     "errorTitle": "Não foi possível carregar suas permissões",
     "errorBody": "A função da sua conta não foi carregada, então toda ação é tratada como somente leitura e as alterações não serão salvas. Verifique sua conexão e tente novamente.",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "errors": {
+      "noProfileRow": "não há linha em profiles para o usuário conectado",
+      "profileFetchFailed": "falha ao carregar o perfil",
+      "missingTenancy": "o perfil {profileId} não tem {column}"
+    }
   },
   "Dashboard": {
     "page": {
@@ -304,7 +309,12 @@
       "finalUrl": "URL final: {url}",
       "back": "Voltar",
       "cancel": "Cancelar",
-      "send": "Enviar modelo"
+      "send": "Enviar modelo",
+      "slots": {
+        "header": "Cabeçalho {slot}",
+        "body": "Corpo {slot}",
+        "urlButton": "Botão de URL \"{text}\" — valor para {slot}"
+      }
     },
     "sidebar": {
       "contactInfo": "Informações do contato",
@@ -729,7 +739,9 @@
       "retryFailed": "Tentar novamente os que falharam ({count})",
       "toastResumeStarted": "Enviando para {count} destinatários em segundo plano.",
       "toastResumeStartedCapped": "Enviando para {count} destinatários em segundo plano. Outros {remaining} precisarão de mais uma execução.",
-      "toastResumeFailed": "Não foi possível retomar: {error}"
+      "toastResumeFailed": "Não foi possível retomar: {error}",
+      "unknownContact": "Desconhecido",
+      "unknownError": "Erro desconhecido"
     },
     "new": {
       "title": "Novo disparo",
@@ -1791,7 +1803,9 @@
       "useMode": "Usar o modo {mode}",
       "active": "Ativo",
       "accentColor": "Cor de destaque",
-      "useTheme": "Usar o tema {name}"
+      "useTheme": "Usar o tema {name}",
+      "modeLight": "Claro",
+      "modeDark": "Escuro"
     },
     "security": {
       "title": "Login e segurança",

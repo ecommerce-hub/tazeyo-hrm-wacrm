@@ -66,7 +66,12 @@
     "unlinkedBody": "Nada de lo que cambies se guardará mientras esto no se resuelva: la base de datos rechaza toda escritura de un usuario sin cuenta ni rol. Si te invitaron a un equipo, pide al propietario que reenvíe la invitación. En una instalación propia, verifica que la migración de bootstrap de la cuenta se haya ejecutado para este usuario.",
     "errorTitle": "No se pudieron cargar tus permisos",
     "errorBody": "El rol de tu cuenta no se cargó, así que toda acción se trata como de solo lectura y los cambios no se guardarán. Revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "errors": {
+      "noProfileRow": "no hay fila en profiles para el usuario conectado",
+      "profileFetchFailed": "no se pudo cargar el perfil",
+      "missingTenancy": "el perfil {profileId} no tiene {column}"
+    }
   },
   "Dashboard": {
     "page": {
@@ -304,7 +309,12 @@
       "finalUrl": "URL final: {url}",
       "back": "Atrás",
       "cancel": "Cancelar",
-      "send": "Enviar plantilla"
+      "send": "Enviar plantilla",
+      "slots": {
+        "header": "Encabezado {slot}",
+        "body": "Cuerpo {slot}",
+        "urlButton": "Botón de URL \"{text}\" — valor para {slot}"
+      }
     },
     "sidebar": {
       "contactInfo": "Información del contacto",
@@ -729,7 +739,9 @@
       "retryFailed": "Reintentar fallidos ({count})",
       "toastResumeStarted": "Enviando a {count} destinatarios en segundo plano.",
       "toastResumeStartedCapped": "Enviando a {count} destinatarios en segundo plano. Otros {remaining} necesitarán otra ejecución.",
-      "toastResumeFailed": "No se pudo reanudar: {error}"
+      "toastResumeFailed": "No se pudo reanudar: {error}",
+      "unknownContact": "Desconocido",
+      "unknownError": "Error desconocido"
     },
     "new": {
       "title": "Nueva difusión",
@@ -1791,7 +1803,9 @@
       "useMode": "Usar el modo {mode}",
       "active": "Activo",
       "accentColor": "Color de acento",
-      "useTheme": "Usar el tema {name}"
+      "useTheme": "Usar el tema {name}",
+      "modeLight": "Claro",
+      "modeDark": "Oscuro"
     },
     "security": {
       "title": "Acceso y seguridad",

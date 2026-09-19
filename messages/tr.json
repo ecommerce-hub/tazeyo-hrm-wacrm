@@ -66,7 +66,12 @@
     "unlinkedBody": "Bu durum çözülmeden yaptığınız hiçbir değişiklik kaydedilmez — veritabanı, hesabı veya rolü olmayan bir kullanıcının tüm yazma işlemlerini reddeder. Bir ekibe davet edildiyseniz hesap sahibinden daveti yeniden göndermesini isteyin. Kendi sunucunuzda barındırılan bir kurulumda, bu kullanıcı için account-bootstrap migrasyonunun çalıştığını kontrol edin.",
     "errorTitle": "İzinleriniz yüklenemedi",
     "errorBody": "Hesap rolünüz yüklenmedi; bu nedenle tüm işlemler salt okunur kabul edilir ve değişiklikler kaydedilmez. Bağlantınızı kontrol edip tekrar deneyin.",
-    "retry": "Tekrar dene"
+    "retry": "Tekrar dene",
+    "errors": {
+      "noProfileRow": "giriş yapan kullanıcı için profiles satırı yok",
+      "profileFetchFailed": "profil alınamadı",
+      "missingTenancy": "{profileId} profilinde {column} değeri yok"
+    }
   },
   "Dashboard": {
     "page": {
@@ -304,7 +309,12 @@
       "finalUrl": "Nihai URL: {url}",
       "back": "Geri",
       "cancel": "İptal",
-      "send": "Şablon gönder"
+      "send": "Şablon gönder",
+      "slots": {
+        "header": "Başlık {slot}",
+        "body": "Gövde {slot}",
+        "urlButton": "\"{text}\" URL butonu — {slot} için değer"
+      }
     },
     "sidebar": {
       "contactInfo": "Kişi bilgileri",
@@ -729,7 +739,9 @@
       "retryFailed": "Başarısızları tekrar dene ({count})",
       "toastResumeStarted": "{count} alıcıya arka planda gönderiliyor.",
       "toastResumeStartedCapped": "{count} alıcıya arka planda gönderiliyor. Kalan {remaining} alıcı için yeni bir çalıştırma gerekecek.",
-      "toastResumeFailed": "Devam ettirilemedi: {error}"
+      "toastResumeFailed": "Devam ettirilemedi: {error}",
+      "unknownContact": "Bilinmiyor",
+      "unknownError": "Bilinmeyen hata"
     },
     "new": {
       "title": "Yeni toplu gönderim",
@@ -1791,7 +1803,9 @@
       "useMode": "{mode} modunu kullan",
       "active": "Aktif",
       "accentColor": "Vurgu rengi",
-      "useTheme": "{name} temasını kullan"
+      "useTheme": "{name} temasını kullan",
+      "modeLight": "Açık",
+      "modeDark": "Koyu"
     },
     "security": {
       "title": "Giriş ve güvenlik",

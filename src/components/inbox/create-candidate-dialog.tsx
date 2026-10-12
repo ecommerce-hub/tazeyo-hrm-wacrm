@@ -174,6 +174,37 @@ export function CreateCandidateDialog({
     [staffRequests, storeId],
   );
 
+  // Each Select gets its options as `items` on the root too — that's what
+  // lets Base UI's <Select.Value> render the item's LABEL in the closed
+  // trigger; without it the trigger shows the raw value (“__none__”).
+  const storeItems = useMemo(
+    () => [
+      { value: NONE, label: t("noStore") },
+      ...stores.map((s) => ({ value: String(s.id), label: s.name })),
+    ],
+    [stores, t],
+  );
+  const requestItems = useMemo(
+    () => [
+      { value: NONE, label: t("noStaffRequest") },
+      ...visibleRequests.map((r) => ({
+        value: String(r.id),
+        label: `${r.store_name} — ${r.position_title}`,
+      })),
+    ],
+    [visibleRequests, t],
+  );
+  const cvItems = useMemo(
+    () => [
+      { value: NONE, label: t("noCv") },
+      ...documents.map((d) => ({
+        value: d.id,
+        label: `${d.filename} · ${format(new Date(d.created_at), "d MMM HH:mm")}`,
+      })),
+    ],
+    [documents, t],
+  );
+
   const handleStoreChange = useCallback(
     (raw: string | null) => {
       const value = raw ?? NONE;
@@ -353,15 +384,14 @@ export function CreateCandidateDialog({
               <label className="mb-1 block text-xs text-muted-foreground">
                 {t("store")}
               </label>
-              <Select value={storeId} onValueChange={handleStoreChange}>
+              <Select items={storeItems} value={storeId} onValueChange={handleStoreChange}>
                 <SelectTrigger className="w-full" disabled={optionsLoading}>
                   <SelectValue placeholder={t("noStore")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>{t("noStore")}</SelectItem>
-                  {stores.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.name}
+                  {storeItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -372,15 +402,14 @@ export function CreateCandidateDialog({
               <label className="mb-1 block text-xs text-muted-foreground">
                 {t("staffRequest")}
               </label>
-              <Select value={staffRequestId} onValueChange={handleRequestChange}>
+              <Select items={requestItems} value={staffRequestId} onValueChange={handleRequestChange}>
                 <SelectTrigger className="w-full" disabled={optionsLoading}>
                   <SelectValue placeholder={t("noStaffRequest")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>{t("noStaffRequest")}</SelectItem>
-                  {visibleRequests.map((r) => (
-                    <SelectItem key={r.id} value={String(r.id)}>
-                      {r.store_name} — {r.position_title}
+                  {requestItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -397,6 +426,7 @@ export function CreateCandidateDialog({
                 {t("cv")}
               </label>
               <Select
+                items={cvItems}
                 value={cvMessageId}
                 onValueChange={(raw) => {
                   const value = raw ?? NONE;
@@ -412,10 +442,9 @@ export function CreateCandidateDialog({
                   <SelectValue placeholder={t("noCv")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>{t("noCv")}</SelectItem>
-                  {documents.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.filename} · {format(new Date(d.created_at), "d MMM HH:mm")}
+                  {cvItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

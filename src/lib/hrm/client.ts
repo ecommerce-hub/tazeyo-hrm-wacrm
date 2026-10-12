@@ -77,8 +77,14 @@ async function hrmFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!cfg) throw new HrmError("HRM integration is not configured", 503);
 
   // Only JSON bodies get an explicit Content-Type — a FormData body must
-  // let fetch set the multipart boundary itself.
-  const headers: Record<string, string> = { "X-Api-Key": cfg.key };
+  // let fetch set the multipart boundary itself. The User-Agent matters:
+  // Node's fetch sends none by default, and Cloudflare's bot heuristics
+  // treat a UA-less request from a datacenter IP (our ECS egress) as
+  // hostile — identify ourselves instead.
+  const headers: Record<string, string> = {
+    "X-Api-Key": cfg.key,
+    "User-Agent": "tazeyo-wacrm/1.0 (+hrm-integration)",
+  };
   if (typeof init?.body === "string") headers["Content-Type"] = "application/json";
 
   let res: Response;
@@ -94,10 +100,24 @@ async function hrmFetch<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as {
-      error?: string;
-      candidate_id?: number;
-    } | null;
+    const raw = await res.text().catch(() => "");
+    let body: { error?: string; candidate_id?: number } | null = null;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      // Not our endpoint's JSON — an edge layer (Cloudflare WAF/Access/
+      // bot protection) answered instead of the HRM app. Surface what it
+      // said so the operator can tell WHICH layer blocked the request:
+      // `cf-mitigated` names the Cloudflare security product when one did.
+      const mitigated = res.headers.get("cf-mitigated");
+      const snippet = raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+      throw new HrmError(
+        `HRM responded with ${res.status}` +
+          (mitigated ? ` (cf-mitigated: ${mitigated})` : "") +
+          (snippet ? ` — ${snippet}` : ""),
+        res.status,
+      );
+    }
     throw new HrmError(
       body?.error || `HRM responded with ${res.status}`,
       res.status,

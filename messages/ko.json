@@ -199,6 +199,45 @@
         "blockFailed": "차단 작업 실패: {reason}"
       }
     },
+    "createCandidate": {
+      "button": "후보자 생성",
+      "transferred": "HRM에 등록됨",
+      "alreadyTransferred": "이미 HRM으로 이관됨 (후보자 #{id})",
+      "noPhone": "이 연락처에는 전화번호가 없습니다",
+      "title": "HRM 후보자 생성",
+      "description": "이 연락처를 Tazeyo HRM에 후보자로 추가합니다.",
+      "firstName": "이름",
+      "lastName": "성",
+      "phone": "전화번호",
+      "store": "매장",
+      "staffRequest": "인력 요청",
+      "noStore": "매장 없음",
+      "noStaffRequest": "요청 없음",
+      "poolHint": "인력 요청을 선택하지 않으면 후보자는 인재 풀로 들어갑니다.",
+      "newCandidateHint": "후보자는 선택한 요청에서 신규 후보자로 등록됩니다.",
+      "notes": "HR 메모",
+      "notesPlaceholder": "HR을 위한 선택적 메모",
+      "cv": "이력서",
+      "noCv": "이력서 없음",
+      "cvUpload": "또는 파일 업로드",
+      "noChatDocuments": "이 대화에는 문서가 없습니다",
+      "cvErrors": {
+        "cv_too_large": "이력서는 10 MB를 초과할 수 없습니다",
+        "cv_type_not_allowed": "PDF, Word 또는 이미지 파일만 허용됩니다",
+        "cv_media_expired": "이 첨부 파일은 WhatsApp에서 만료되었습니다 — 대신 파일을 업로드하세요",
+        "cv_fetch_failed": "첨부 파일을 다운로드할 수 없습니다"
+      },
+      "notConfigured": "이 배포에는 HRM 연동이 구성되어 있지 않습니다.",
+      "create": "생성",
+      "creating": "생성 중…",
+      "openInHrm": "HRM에서 열기",
+      "toasts": {
+        "created": "{name}이(가) HRM 후보자로 생성되었습니다",
+        "failed": "후보자를 생성할 수 없습니다: {reason}",
+        "optionsFailed": "HRM 옵션을 불러올 수 없습니다: {reason}",
+        "cvFailed": "후보자는 생성되었지만 이력서 업로드에 실패했습니다: {reason}"
+      }
+    },
     "sessionTimer": {
       "expired": "만료됨",
       "xhRemaining": "{hours}시간 남음",

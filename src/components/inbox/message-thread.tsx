@@ -30,6 +30,7 @@ import {
   Archive,
   ArchiveRestore,
   Ban,
+  UserRoundPlus,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInHours } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -53,6 +54,11 @@ import {
 } from "./message-composer";
 import { deleteAccountMedia } from "@/lib/storage/upload-media";
 import { TemplatePicker } from "./template-picker";
+import {
+  CreateCandidateDialog,
+  type ChatDocument,
+} from "./create-candidate-dialog";
+import { useCan } from "@/hooks/use-can";
 import { AiThreadBanner } from "./ai-thread-banner";
 import { buildReplyPreview } from "./reply-quote";
 import { renderTemplateBody } from "@/lib/whatsapp/template-body";
@@ -119,6 +125,14 @@ interface MessageThreadProps {
    * keep working; the button only renders when this is wired up.
    */
   onBlockChange?: (contactId: string, blocked: boolean) => void;
+  /**
+   * Tazeyo HRM integration (migration 046). Fired after the contact got
+   * linked to an HRM candidate — fresh create or duplicate-phone 409 —
+   * so the page can stamp `hrm_candidate_id` onto its contact state.
+   * Optional so existing callers keep working; the "create candidate"
+   * header button only renders when this is wired up.
+   */
+  onCandidateCreated?: (contactId: string, candidateId: number) => void;
 }
 
 function formatDateSeparator(dateStr: string, t: ReturnType<typeof useTranslations>): string {
@@ -179,17 +193,39 @@ export function MessageThread({
   onToggleContactPanel,
   onArchive,
   onBlockChange,
+  onCandidateCreated,
 }: MessageThreadProps) {
   const t = useTranslations("Inbox.messageThread");
   const tPresence = useTranslations("Common.presence");
   const tTimer = useTranslations("Inbox.sessionTimer");
   const tQuote = useTranslations("Inbox.replyQuote");
+  const tCandidate = useTranslations("Inbox.createCandidate");
+  const canSendMessages = useCan("send-messages");
 
   const { user } = useAuth();
   const { getPresence, getRow, now } = usePresence();
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  const [candidateDialogOpen, setCandidateDialogOpen] = useState(false);
+
+  // Document attachments in this thread, newest first — offered as CV
+  // sources by the create-candidate dialog (a CV usually arrives as a
+  // WhatsApp document from the contact). The filename lives in
+  // content_text (webhook stores document.filename there, the composer
+  // the uploaded file's name) unless a caption displaced it.
+  const chatDocuments = useMemo<ChatDocument[]>(
+    () =>
+      messages
+        .filter((m) => m.content_type === "document" && m.media_url)
+        .map((m) => ({
+          id: m.id,
+          filename: m.content_text || "document",
+          created_at: m.created_at,
+        }))
+        .reverse(),
+    [messages],
+  );
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [reactions, setReactions] = useState<MessageReaction[]>([]);
   // Purely visual spin state for the manual-refresh button. The actual
@@ -1104,6 +1140,39 @@ export function MessageThread({
             </button>
           )}
 
+          {/* Tazeyo HRM transfer — opens the create-candidate dialog.
+              Disabled for BSUID-only contacts (the HRM keys candidates
+              by phone) and once the contact is already linked to a
+              candidate (the HRM's unique phone index would 409 anyway). */}
+          {onCandidateCreated && contact && canSendMessages && (
+            <button
+              onClick={() => setCandidateDialogOpen(true)}
+              disabled={!contact.phone || !!contact.hrm_candidate_id}
+              title={
+                contact.hrm_candidate_id
+                  ? tCandidate("alreadyTransferred", {
+                      id: contact.hrm_candidate_id,
+                    })
+                  : contact.phone
+                    ? tCandidate("button")
+                    : tCandidate("noPhone")
+              }
+              className={cn(
+                "inline-flex items-center justify-center h-7 gap-1 px-2 text-xs rounded-md hover:bg-muted disabled:pointer-events-none disabled:opacity-60",
+                contact.hrm_candidate_id
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <UserRoundPlus className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">
+                {contact.hrm_candidate_id
+                  ? tCandidate("transferred")
+                  : tCandidate("button")}
+              </span>
+            </button>
+          )}
+
           {/* Assign dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -1282,6 +1351,16 @@ export function MessageThread({
         onOpenChange={setTemplateModalOpen}
         onSelect={handleSendTemplate}
       />
+
+      {onCandidateCreated && contact && (
+        <CreateCandidateDialog
+          open={candidateDialogOpen}
+          onOpenChange={setCandidateDialogOpen}
+          contact={contact}
+          documents={chatDocuments}
+          onCreated={onCandidateCreated}
+        />
+      )}
 
       {/* Full-size viewer for the thread's images/videos. Renders nothing
           until a bubble opens it. */}

@@ -199,6 +199,45 @@
         "blockFailed": "Engelleme işlemi başarısız: {reason}"
       }
     },
+    "createCandidate": {
+      "button": "Aday Oluştur",
+      "transferred": "HRM'de",
+      "alreadyTransferred": "HRM'e zaten aktarıldı (aday #{id})",
+      "noPhone": "Bu kontağın telefon numarası yok",
+      "title": "HRM'de Aday Oluştur",
+      "description": "Bu kontağı Tazeyo HRM'e aday olarak ekler.",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "phone": "Telefon",
+      "store": "Mağaza",
+      "staffRequest": "Personel talebi",
+      "noStore": "Mağaza seçilmedi",
+      "noStaffRequest": "Talep seçilmedi",
+      "poolHint": "Talep seçilmezse aday, aday havuzuna düşer.",
+      "newCandidateHint": "Aday, seçilen talepte yeni aday olarak açılır.",
+      "notes": "İK notu",
+      "notesPlaceholder": "İK için opsiyonel not",
+      "cv": "CV",
+      "noCv": "CV eklenmesin",
+      "cvUpload": "veya dosya yükle",
+      "noChatDocuments": "Bu sohbette belge yok",
+      "cvErrors": {
+        "cv_too_large": "CV 10 MB'ı aşamaz",
+        "cv_type_not_allowed": "Yalnızca PDF, Word veya görsel dosyalar kabul edilir",
+        "cv_media_expired": "Bu belgenin WhatsApp'taki süresi dolmuş — dosyayı bilgisayardan yükleyin",
+        "cv_fetch_failed": "Belge indirilemedi"
+      },
+      "notConfigured": "HRM entegrasyonu bu kurulumda yapılandırılmamış.",
+      "create": "Oluştur",
+      "creating": "Oluşturuluyor…",
+      "openInHrm": "HRM'de Aç",
+      "toasts": {
+        "created": "{name} HRM'e aday olarak eklendi",
+        "failed": "Aday oluşturulamadı: {reason}",
+        "optionsFailed": "HRM seçenekleri yüklenemedi: {reason}",
+        "cvFailed": "Aday oluşturuldu ancak CV yüklenemedi: {reason}"
+      }
+    },
     "sessionTimer": {
       "expired": "Süresi doldu",
       "xhRemaining": "{hours} saat kaldı",

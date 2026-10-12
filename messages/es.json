@@ -199,6 +199,45 @@
         "blockFailed": "La acción de bloqueo falló: {reason}"
       }
     },
+    "createCandidate": {
+      "button": "Crear candidato",
+      "transferred": "En HRM",
+      "alreadyTransferred": "Ya transferido a HRM (candidato #{id})",
+      "noPhone": "Este contacto no tiene número de teléfono",
+      "title": "Crear candidato en HRM",
+      "description": "Agrega este contacto a Tazeyo HRM como candidato.",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "phone": "Teléfono",
+      "store": "Tienda",
+      "staffRequest": "Solicitud de personal",
+      "noStore": "Sin tienda",
+      "noStaffRequest": "Sin solicitud",
+      "poolHint": "Sin una solicitud de personal, el candidato va al banco de talentos.",
+      "newCandidateHint": "El candidato se abre como nuevo candidato en la solicitud seleccionada.",
+      "notes": "Nota de RR. HH.",
+      "notesPlaceholder": "Nota opcional para RR. HH.",
+      "cv": "CV",
+      "noCv": "Sin CV",
+      "cvUpload": "o subir un archivo",
+      "noChatDocuments": "No hay documentos en esta conversación",
+      "cvErrors": {
+        "cv_too_large": "El CV no puede superar los 10 MB",
+        "cv_type_not_allowed": "Solo se aceptan archivos PDF, Word o imágenes",
+        "cv_media_expired": "Este adjunto expiró en WhatsApp — suba el archivo en su lugar",
+        "cv_fetch_failed": "No se pudo descargar el adjunto"
+      },
+      "notConfigured": "La integración con HRM no está configurada en esta instalación.",
+      "create": "Crear",
+      "creating": "Creando…",
+      "openInHrm": "Abrir en HRM",
+      "toasts": {
+        "created": "{name} fue creado como candidato en HRM",
+        "failed": "No se pudo crear el candidato: {reason}",
+        "optionsFailed": "No se pudieron cargar las opciones de HRM: {reason}",
+        "cvFailed": "El candidato fue creado pero no se pudo subir el CV: {reason}"
+      }
+    },
     "sessionTimer": {
       "expired": "Expirada",
       "xhRemaining": "{hours}h restantes",

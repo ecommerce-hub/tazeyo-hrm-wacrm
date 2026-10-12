@@ -199,6 +199,45 @@
         "blockFailed": "Block action failed: {reason}"
       }
     },
+    "createCandidate": {
+      "button": "Create candidate",
+      "transferred": "In HRM",
+      "alreadyTransferred": "Already transferred to HRM (candidate #{id})",
+      "noPhone": "This contact has no phone number",
+      "title": "Create HRM candidate",
+      "description": "Adds this contact to Tazeyo HRM as a candidate.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "phone": "Phone",
+      "store": "Store",
+      "staffRequest": "Staff request",
+      "noStore": "No store",
+      "noStaffRequest": "No staff request",
+      "poolHint": "Without a staff request the candidate lands in the talent pool.",
+      "newCandidateHint": "The candidate opens as a new candidate on the selected request.",
+      "notes": "HR note",
+      "notesPlaceholder": "Optional note for HR",
+      "cv": "CV",
+      "noCv": "No CV",
+      "cvUpload": "or upload a file",
+      "noChatDocuments": "No documents in this conversation",
+      "cvErrors": {
+        "cv_too_large": "The CV can't exceed 10 MB",
+        "cv_type_not_allowed": "Only PDF, Word or image files are accepted",
+        "cv_media_expired": "This attachment has expired on WhatsApp — upload the file instead",
+        "cv_fetch_failed": "The attachment could not be downloaded"
+      },
+      "notConfigured": "The HRM integration is not configured on this deployment.",
+      "create": "Create",
+      "creating": "Creating…",
+      "openInHrm": "Open in HRM",
+      "toasts": {
+        "created": "{name} was created as an HRM candidate",
+        "failed": "Could not create the candidate: {reason}",
+        "optionsFailed": "Could not load HRM options: {reason}",
+        "cvFailed": "The candidate was created but the CV upload failed: {reason}"
+      }
+    },
     "sessionTimer": {
       "expired": "Expired",
       "xhRemaining": "{hours}h remaining",

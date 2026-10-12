@@ -624,6 +624,36 @@ function InboxPageInner() {
     []
   );
 
+  // Tazeyo HRM transfer (migration 046). Like blocking, the link lives
+  // on the CONTACT — stamp it on every conversation carrying the contact
+  // plus the active-contact state so the thread button flips to its
+  // "already transferred" form without a refetch.
+  const handleCandidateCreated = useCallback(
+    (contactId: string, candidateId: number) => {
+      const syncedAt = new Date().toISOString();
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.contact_id === contactId && c.contact
+            ? {
+                ...c,
+                contact: {
+                  ...c.contact,
+                  hrm_candidate_id: candidateId,
+                  hrm_synced_at: syncedAt,
+                },
+              }
+            : c
+        )
+      );
+      setActiveContact((prev) =>
+        prev && prev.id === contactId
+          ? { ...prev, hrm_candidate_id: candidateId, hrm_synced_at: syncedAt }
+          : prev
+      );
+    },
+    []
+  );
+
   const handleAssignChange = useCallback(
     (conversationId: string, assignedAgentId: string | null) => {
       setConversations((prev) =>
@@ -720,6 +750,7 @@ function InboxPageInner() {
             onToggleContactPanel={handleToggleContactPanel}
             onArchive={handleArchive}
             onBlockChange={handleBlockChange}
+            onCandidateCreated={handleCandidateCreated}
           />
         </div>
 

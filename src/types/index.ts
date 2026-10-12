@@ -131,6 +131,14 @@ export interface Contact {
    * AI auto-reply never fire for them.
    */
   is_blocked?: boolean;
+  /**
+   * Tazeyo HRM integration (migration 046). The HRM candidate this
+   * contact was transferred to via the inbox "create candidate" action,
+   * and when. Set by /api/hrm/candidates — also on a duplicate-phone
+   * 409, which links the contact to the pre-existing candidate.
+   */
+  hrm_candidate_id?: number | null;
+  hrm_synced_at?: string | null;
 }
 
 export interface Tag {
